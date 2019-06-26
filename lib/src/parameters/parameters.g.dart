@@ -6,6 +6,239 @@ part of 'parameters.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+Serializers _$_paramSerializers = (new Serializers().toBuilder()
+      ..add(Parameters.serializer)
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(String)]),
+          () => new ParameterBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(String)]),
+          () => new ParameterBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(String)]),
+          () => new ParameterBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(DisplayOption)]),
+          () => new ParameterBuilder<DisplayOption>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(String)]),
+          () => new ParameterBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(Parameter, const [const FullType(int)]),
+          () => new ParameterBuilder<int>()))
+    .build();
+Serializer<Parameters> _$parametersSerializer = new _$ParametersSerializer();
+
+class _$ParametersSerializer implements StructuredSerializer<Parameters> {
+  @override
+  final Iterable<Type> types = const [Parameters, _$Parameters];
+  @override
+  final String wireName = 'Parameters';
+
+  @override
+  Iterable serialize(Serializers serializers, Parameters object,
+      {FullType specifiedType = FullType.unspecified}) {
+    final result = <Object>[
+      'type',
+      serializers.serialize(object.type,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(String)])),
+      'xAxis',
+      serializers.serialize(object.xAxis,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(String)])),
+      'breakdownBy',
+      serializers.serialize(object.breakdownBy,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(String)])),
+      'options',
+      serializers.serialize(object.options,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(DisplayOption)])),
+      'deckSize',
+      serializers.serialize(object.deckSize,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'landsInDeck',
+      serializers.serialize(object.landsInDeck,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'numCards',
+      serializers.serialize(object.numCards,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'bestOf',
+      serializers.serialize(object.bestOf,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'shuffling',
+      serializers.serialize(object.shuffling,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(String)])),
+      'mulligans',
+      serializers.serialize(object.mulligans,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'numDrawn',
+      serializers.serialize(object.numDrawn,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'landsInHand',
+      serializers.serialize(object.landsInHand,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'libraryPosition',
+      serializers.serialize(object.libraryPosition,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'decklistPosition',
+      serializers.serialize(object.decklistPosition,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+      'weeks',
+      serializers.serialize(object.weeks,
+          specifiedType:
+              const FullType(Parameter, const [const FullType(int)])),
+    ];
+
+    return result;
+  }
+
+  @override
+  Parameters deserialize(Serializers serializers, Iterable serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+    final result = new ParametersBuilder();
+
+    final iterator = serialized.iterator;
+    while (iterator.moveNext()) {
+      final key = iterator.current as String;
+      iterator.moveNext();
+      final dynamic value = iterator.current;
+      switch (key) {
+        case 'type':
+          result.type = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(String)]))
+              as Parameter<String>;
+          break;
+        case 'xAxis':
+          result.xAxis = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(String)]))
+              as Parameter<String>;
+          break;
+        case 'breakdownBy':
+          result.breakdownBy = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(String)]))
+              as Parameter<String>;
+          break;
+        case 'options':
+          result.options = serializers.deserialize(value,
+                  specifiedType: const FullType(
+                      Parameter, const [const FullType(DisplayOption)]))
+              as Parameter<DisplayOption>;
+          break;
+        case 'deckSize':
+          result.deckSize = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'landsInDeck':
+          result.landsInDeck = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'numCards':
+          result.numCards = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'bestOf':
+          result.bestOf = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'shuffling':
+          result.shuffling = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(String)]))
+              as Parameter<String>;
+          break;
+        case 'mulligans':
+          result.mulligans = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'numDrawn':
+          result.numDrawn = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'landsInHand':
+          result.landsInHand = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'libraryPosition':
+          result.libraryPosition = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'decklistPosition':
+          result.decklistPosition = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+        case 'weeks':
+          result.weeks = serializers.deserialize(value,
+                  specifiedType:
+                      const FullType(Parameter, const [const FullType(int)]))
+              as Parameter<int>;
+          break;
+      }
+    }
+
+    return result.build();
+  }
+}
+
 class _$Parameters extends Parameters {
   @override
   final Parameter<String> type;
@@ -37,6 +270,7 @@ class _$Parameters extends Parameters {
   final Parameter<int> decklistPosition;
   @override
   final Parameter<int> weeks;
+  BuiltMap<String, Parameter<dynamic>> __asMap;
 
   factory _$Parameters([void Function(ParametersBuilder) updates]) =>
       (new ParametersBuilder()..update(updates)).build();
@@ -104,6 +338,9 @@ class _$Parameters extends Parameters {
       throw new BuiltValueNullFieldError('Parameters', 'weeks');
     }
   }
+
+  @override
+  BuiltMap<String, Parameter<dynamic>> get asMap => __asMap ??= super.asMap;
 
   @override
   Parameters rebuild(void Function(ParametersBuilder) updates) =>
@@ -662,33 +899,3 @@ class OptionBuilder<T> implements Builder<Option<T>, OptionBuilder<T>> {
 }
 
 // ignore_for_file: always_put_control_body_on_new_line,always_specify_types,annotate_overrides,avoid_annotating_with_dynamic,avoid_as,avoid_catches_without_on_clauses,avoid_returning_this,lines_longer_than_80_chars,omit_local_variable_types,prefer_expression_function_bodies,sort_constructors_first,test_types_in_equals,unnecessary_const,unnecessary_new
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
-
-Map<String, dynamic> _$ParametersToJson(Parameters instance) =>
-    <String, dynamic>{
-      'type': instance.type,
-      'xAxis': instance.xAxis,
-      'breakdownBy': instance.breakdownBy,
-      'options': instance.options,
-      'deckSize': instance.deckSize,
-      'landsInDeck': instance.landsInDeck,
-      'numCards': instance.numCards,
-      'bestOf': instance.bestOf,
-      'shuffling': instance.shuffling,
-      'mulligans': instance.mulligans,
-      'numDrawn': instance.numDrawn,
-      'landsInHand': instance.landsInHand,
-      'libraryPosition': instance.libraryPosition,
-      'decklistPosition': instance.decklistPosition,
-      'weeks': instance.weeks
-    };
-
-Parameter<T> _$ParameterFromJson<T>(Map<String, dynamic> json) {
-  return Parameter<T>();
-}
-
-Map<String, dynamic> _$ParameterToJson<T>(Parameter<T> instance) =>
-    <String, dynamic>{};
