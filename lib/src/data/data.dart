@@ -2,6 +2,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:built_value/standard_json_plugin.dart';
+import 'package:shuffler_charts/src/parameters/parameters.dart';
 
 part 'data.g.dart';
 
@@ -14,37 +15,32 @@ part 'data.g.dart';
 Serializers dataSerializers =
     (_$dataSerializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();
 
-abstract class LandsGroup implements Built<LandsGroup, LandsGroupBuilder> {
-  static Serializer<LandsGroup> get serializer => _$landsGroupSerializer;
-
-  int get deckSize;
-  int get landsInDeck;
-  int get bestOf;
-  String get shuffling;
-  int get week;
-  String get type;
-
-  LandsGroup._();
-
-  factory LandsGroup([void Function(LandsGroupBuilder) updates]) = _$LandsGroup;
-}
-
-abstract class CardsGroup implements Built<CardsGroup, CardsGroupBuilder> {
-  static Serializer<CardsGroup> get serializer => _$cardsGroupSerializer;
-
+abstract class Group {
   int get deckSize;
   int get numCards;
   int get bestOf;
-  String get shuffling;
+  Shuffling get shuffling;
   int get week;
-  String get type;
+  StatsType get type;
+}
+
+abstract class LandsGroup implements Group, Built<LandsGroup, LandsGroupBuilder> {
+  static Serializer<LandsGroup> get serializer => _$landsGroupSerializer;
+  int get landsInDeck;
+  int get numCards => landsInDeck;
+
+  LandsGroup._();
+  factory LandsGroup([void Function(LandsGroupBuilder) updates]) = _$LandsGroup;
+}
+
+abstract class CardsGroup implements Group, Built<CardsGroup, CardsGroupBuilder> {
+  static Serializer<CardsGroup> get serializer => _$cardsGroupSerializer;
 
   CardsGroup._();
-
   factory CardsGroup([void Function(CardsGroupBuilder) updates]) = _$CardsGroup;
 }
 
-abstract class DataEntry<G, D extends BuiltList<dynamic>> {
+abstract class DataEntry<G extends Group, D extends BuiltList<dynamic>> {
   G get group;
   D get data;
   BuiltList<String> get indexNames;

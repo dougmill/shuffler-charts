@@ -13,6 +13,8 @@ Serializers _$dataSerializers = (new Serializers().toBuilder()
       ..add(LandsGroup.serializer)
       ..add(LandsInHandEntry.serializer)
       ..add(LandsInLibraryEntry.serializer)
+      ..add(Shuffling.serializer)
+      ..add(StatsType.serializer)
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(BuiltList, const [
@@ -61,21 +63,22 @@ class _$LandsGroupSerializer implements StructuredSerializer<LandsGroup> {
   Iterable serialize(Serializers serializers, LandsGroup object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
-      'deckSize',
-      serializers.serialize(object.deckSize,
-          specifiedType: const FullType(int)),
       'landsInDeck',
       serializers.serialize(object.landsInDeck,
+          specifiedType: const FullType(int)),
+      'deckSize',
+      serializers.serialize(object.deckSize,
           specifiedType: const FullType(int)),
       'bestOf',
       serializers.serialize(object.bestOf, specifiedType: const FullType(int)),
       'shuffling',
       serializers.serialize(object.shuffling,
-          specifiedType: const FullType(String)),
+          specifiedType: const FullType(Shuffling)),
       'week',
       serializers.serialize(object.week, specifiedType: const FullType(int)),
       'type',
-      serializers.serialize(object.type, specifiedType: const FullType(String)),
+      serializers.serialize(object.type,
+          specifiedType: const FullType(StatsType)),
     ];
 
     return result;
@@ -92,12 +95,12 @@ class _$LandsGroupSerializer implements StructuredSerializer<LandsGroup> {
       iterator.moveNext();
       final dynamic value = iterator.current;
       switch (key) {
-        case 'deckSize':
-          result.deckSize = serializers.deserialize(value,
-              specifiedType: const FullType(int)) as int;
-          break;
         case 'landsInDeck':
           result.landsInDeck = serializers.deserialize(value,
+              specifiedType: const FullType(int)) as int;
+          break;
+        case 'deckSize':
+          result.deckSize = serializers.deserialize(value,
               specifiedType: const FullType(int)) as int;
           break;
         case 'bestOf':
@@ -106,7 +109,7 @@ class _$LandsGroupSerializer implements StructuredSerializer<LandsGroup> {
           break;
         case 'shuffling':
           result.shuffling = serializers.deserialize(value,
-              specifiedType: const FullType(String)) as String;
+              specifiedType: const FullType(Shuffling)) as Shuffling;
           break;
         case 'week':
           result.week = serializers.deserialize(value,
@@ -114,7 +117,7 @@ class _$LandsGroupSerializer implements StructuredSerializer<LandsGroup> {
           break;
         case 'type':
           result.type = serializers.deserialize(value,
-              specifiedType: const FullType(String)) as String;
+              specifiedType: const FullType(StatsType)) as StatsType;
           break;
       }
     }
@@ -143,11 +146,12 @@ class _$CardsGroupSerializer implements StructuredSerializer<CardsGroup> {
       serializers.serialize(object.bestOf, specifiedType: const FullType(int)),
       'shuffling',
       serializers.serialize(object.shuffling,
-          specifiedType: const FullType(String)),
+          specifiedType: const FullType(Shuffling)),
       'week',
       serializers.serialize(object.week, specifiedType: const FullType(int)),
       'type',
-      serializers.serialize(object.type, specifiedType: const FullType(String)),
+      serializers.serialize(object.type,
+          specifiedType: const FullType(StatsType)),
     ];
 
     return result;
@@ -178,7 +182,7 @@ class _$CardsGroupSerializer implements StructuredSerializer<CardsGroup> {
           break;
         case 'shuffling':
           result.shuffling = serializers.deserialize(value,
-              specifiedType: const FullType(String)) as String;
+              specifiedType: const FullType(Shuffling)) as Shuffling;
           break;
         case 'week':
           result.week = serializers.deserialize(value,
@@ -186,7 +190,7 @@ class _$CardsGroupSerializer implements StructuredSerializer<CardsGroup> {
           break;
         case 'type':
           result.type = serializers.deserialize(value,
-              specifiedType: const FullType(String)) as String;
+              specifiedType: const FullType(StatsType)) as StatsType;
           break;
       }
     }
@@ -423,34 +427,34 @@ class _$CardsByCountEntrySerializer
 
 class _$LandsGroup extends LandsGroup {
   @override
-  final int deckSize;
-  @override
   final int landsInDeck;
+  @override
+  final int deckSize;
   @override
   final int bestOf;
   @override
-  final String shuffling;
+  final Shuffling shuffling;
   @override
   final int week;
   @override
-  final String type;
+  final StatsType type;
 
   factory _$LandsGroup([void Function(LandsGroupBuilder) updates]) =>
       (new LandsGroupBuilder()..update(updates)).build();
 
   _$LandsGroup._(
-      {this.deckSize,
-      this.landsInDeck,
+      {this.landsInDeck,
+      this.deckSize,
       this.bestOf,
       this.shuffling,
       this.week,
       this.type})
       : super._() {
-    if (deckSize == null) {
-      throw new BuiltValueNullFieldError('LandsGroup', 'deckSize');
-    }
     if (landsInDeck == null) {
       throw new BuiltValueNullFieldError('LandsGroup', 'landsInDeck');
+    }
+    if (deckSize == null) {
+      throw new BuiltValueNullFieldError('LandsGroup', 'deckSize');
     }
     if (bestOf == null) {
       throw new BuiltValueNullFieldError('LandsGroup', 'bestOf');
@@ -477,8 +481,8 @@ class _$LandsGroup extends LandsGroup {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is LandsGroup &&
-        deckSize == other.deckSize &&
         landsInDeck == other.landsInDeck &&
+        deckSize == other.deckSize &&
         bestOf == other.bestOf &&
         shuffling == other.shuffling &&
         week == other.week &&
@@ -490,7 +494,7 @@ class _$LandsGroup extends LandsGroup {
     return $jf($jc(
         $jc(
             $jc(
-                $jc($jc($jc(0, deckSize.hashCode), landsInDeck.hashCode),
+                $jc($jc($jc(0, landsInDeck.hashCode), deckSize.hashCode),
                     bestOf.hashCode),
                 shuffling.hashCode),
             week.hashCode),
@@ -500,8 +504,8 @@ class _$LandsGroup extends LandsGroup {
   @override
   String toString() {
     return (newBuiltValueToStringHelper('LandsGroup')
-          ..add('deckSize', deckSize)
           ..add('landsInDeck', landsInDeck)
+          ..add('deckSize', deckSize)
           ..add('bestOf', bestOf)
           ..add('shuffling', shuffling)
           ..add('week', week)
@@ -513,36 +517,36 @@ class _$LandsGroup extends LandsGroup {
 class LandsGroupBuilder implements Builder<LandsGroup, LandsGroupBuilder> {
   _$LandsGroup _$v;
 
-  int _deckSize;
-  int get deckSize => _$this._deckSize;
-  set deckSize(int deckSize) => _$this._deckSize = deckSize;
-
   int _landsInDeck;
   int get landsInDeck => _$this._landsInDeck;
   set landsInDeck(int landsInDeck) => _$this._landsInDeck = landsInDeck;
+
+  int _deckSize;
+  int get deckSize => _$this._deckSize;
+  set deckSize(int deckSize) => _$this._deckSize = deckSize;
 
   int _bestOf;
   int get bestOf => _$this._bestOf;
   set bestOf(int bestOf) => _$this._bestOf = bestOf;
 
-  String _shuffling;
-  String get shuffling => _$this._shuffling;
-  set shuffling(String shuffling) => _$this._shuffling = shuffling;
+  Shuffling _shuffling;
+  Shuffling get shuffling => _$this._shuffling;
+  set shuffling(Shuffling shuffling) => _$this._shuffling = shuffling;
 
   int _week;
   int get week => _$this._week;
   set week(int week) => _$this._week = week;
 
-  String _type;
-  String get type => _$this._type;
-  set type(String type) => _$this._type = type;
+  StatsType _type;
+  StatsType get type => _$this._type;
+  set type(StatsType type) => _$this._type = type;
 
   LandsGroupBuilder();
 
   LandsGroupBuilder get _$this {
     if (_$v != null) {
-      _deckSize = _$v.deckSize;
       _landsInDeck = _$v.landsInDeck;
+      _deckSize = _$v.deckSize;
       _bestOf = _$v.bestOf;
       _shuffling = _$v.shuffling;
       _week = _$v.week;
@@ -569,8 +573,8 @@ class LandsGroupBuilder implements Builder<LandsGroup, LandsGroupBuilder> {
   _$LandsGroup build() {
     final _$result = _$v ??
         new _$LandsGroup._(
-            deckSize: deckSize,
             landsInDeck: landsInDeck,
+            deckSize: deckSize,
             bestOf: bestOf,
             shuffling: shuffling,
             week: week,
@@ -588,11 +592,11 @@ class _$CardsGroup extends CardsGroup {
   @override
   final int bestOf;
   @override
-  final String shuffling;
+  final Shuffling shuffling;
   @override
   final int week;
   @override
-  final String type;
+  final StatsType type;
 
   factory _$CardsGroup([void Function(CardsGroupBuilder) updates]) =>
       (new CardsGroupBuilder()..update(updates)).build();
@@ -684,17 +688,17 @@ class CardsGroupBuilder implements Builder<CardsGroup, CardsGroupBuilder> {
   int get bestOf => _$this._bestOf;
   set bestOf(int bestOf) => _$this._bestOf = bestOf;
 
-  String _shuffling;
-  String get shuffling => _$this._shuffling;
-  set shuffling(String shuffling) => _$this._shuffling = shuffling;
+  Shuffling _shuffling;
+  Shuffling get shuffling => _$this._shuffling;
+  set shuffling(Shuffling shuffling) => _$this._shuffling = shuffling;
 
   int _week;
   int get week => _$this._week;
   set week(int week) => _$this._week = week;
 
-  String _type;
-  String get type => _$this._type;
-  set type(String type) => _$this._type = type;
+  StatsType _type;
+  StatsType get type => _$this._type;
+  set type(StatsType type) => _$this._type = type;
 
   CardsGroupBuilder();
 
