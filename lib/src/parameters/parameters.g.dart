@@ -54,59 +54,30 @@ final BuiltSet<Shuffling> _$shufflingValues =
   _$smoothed,
 ]);
 
-Serializers _$_paramSerializers = (new Serializers().toBuilder()
-      ..add(Parameters.serializer)
-      ..add(Shuffling.serializer)
-      ..add(StatsType.serializer)
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(StatsType)]),
-          () => new ParameterBuilder<StatsType>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(String)]),
-          () => new ParameterBuilder<String>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(String)]),
-          () => new ParameterBuilder<String>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(DisplayOption)]),
-          () => new ParameterBuilder<DisplayOption>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(Shuffling)]),
-          () => new ParameterBuilder<Shuffling>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>())
-      ..addBuilderFactory(
-          const FullType(Parameter, const [const FullType(int)]),
-          () => new ParameterBuilder<int>()))
-    .build();
+const MulliganType _$vancouver = const MulliganType._('vancouver');
+const MulliganType _$london = const MulliganType._('london');
+
+MulliganType _$mulliganTypeValueOf(String name) {
+  switch (name) {
+    case 'vancouver':
+      return _$vancouver;
+    case 'london':
+      return _$london;
+    default:
+      throw new ArgumentError(name);
+  }
+}
+
+final BuiltSet<MulliganType> _$mulliganTypeValues =
+    new BuiltSet<MulliganType>(const <MulliganType>[
+  _$vancouver,
+  _$london,
+]);
+
 Serializer<StatsType> _$statsTypeSerializer = new _$StatsTypeSerializer();
 Serializer<Shuffling> _$shufflingSerializer = new _$ShufflingSerializer();
-Serializer<Parameters> _$parametersSerializer = new _$ParametersSerializer();
+Serializer<MulliganType> _$mulliganTypeSerializer =
+    new _$MulliganTypeSerializer();
 
 class _$StatsTypeSerializer implements PrimitiveSerializer<StatsType> {
   @override
@@ -142,187 +113,21 @@ class _$ShufflingSerializer implements PrimitiveSerializer<Shuffling> {
       Shuffling.valueOf(serialized as String);
 }
 
-class _$ParametersSerializer implements StructuredSerializer<Parameters> {
+class _$MulliganTypeSerializer implements PrimitiveSerializer<MulliganType> {
   @override
-  final Iterable<Type> types = const [Parameters, _$Parameters];
+  final Iterable<Type> types = const <Type>[MulliganType];
   @override
-  final String wireName = 'Parameters';
-
-  @override
-  Iterable serialize(Serializers serializers, Parameters object,
-      {FullType specifiedType = FullType.unspecified}) {
-    final result = <Object>[
-      'type',
-      serializers.serialize(object.type,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(StatsType)])),
-      'xAxis',
-      serializers.serialize(object.xAxis,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(String)])),
-      'breakdownBy',
-      serializers.serialize(object.breakdownBy,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(String)])),
-      'options',
-      serializers.serialize(object.options,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(DisplayOption)])),
-      'deckSize',
-      serializers.serialize(object.deckSize,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'landsInDeck',
-      serializers.serialize(object.landsInDeck,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'numCards',
-      serializers.serialize(object.numCards,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'bestOf',
-      serializers.serialize(object.bestOf,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'shuffling',
-      serializers.serialize(object.shuffling,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(Shuffling)])),
-      'mulligans',
-      serializers.serialize(object.mulligans,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'numDrawn',
-      serializers.serialize(object.numDrawn,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'landsInHand',
-      serializers.serialize(object.landsInHand,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'libraryPosition',
-      serializers.serialize(object.libraryPosition,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'decklistPosition',
-      serializers.serialize(object.decklistPosition,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-      'weeks',
-      serializers.serialize(object.weeks,
-          specifiedType:
-              const FullType(Parameter, const [const FullType(int)])),
-    ];
-
-    return result;
-  }
+  final String wireName = 'MulliganType';
 
   @override
-  Parameters deserialize(Serializers serializers, Iterable serialized,
-      {FullType specifiedType = FullType.unspecified}) {
-    final result = new ParametersBuilder();
+  Object serialize(Serializers serializers, MulliganType object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      object.name;
 
-    final iterator = serialized.iterator;
-    while (iterator.moveNext()) {
-      final key = iterator.current as String;
-      iterator.moveNext();
-      final dynamic value = iterator.current;
-      switch (key) {
-        case 'type':
-          result.type = serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      Parameter, const [const FullType(StatsType)]))
-              as Parameter<StatsType>;
-          break;
-        case 'xAxis':
-          result.xAxis = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(String)]))
-              as Parameter<String>;
-          break;
-        case 'breakdownBy':
-          result.breakdownBy = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(String)]))
-              as Parameter<String>;
-          break;
-        case 'options':
-          result.options = serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      Parameter, const [const FullType(DisplayOption)]))
-              as Parameter<DisplayOption>;
-          break;
-        case 'deckSize':
-          result.deckSize = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'landsInDeck':
-          result.landsInDeck = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'numCards':
-          result.numCards = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'bestOf':
-          result.bestOf = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'shuffling':
-          result.shuffling = serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      Parameter, const [const FullType(Shuffling)]))
-              as Parameter<Shuffling>;
-          break;
-        case 'mulligans':
-          result.mulligans = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'numDrawn':
-          result.numDrawn = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'landsInHand':
-          result.landsInHand = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'libraryPosition':
-          result.libraryPosition = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'decklistPosition':
-          result.decklistPosition = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-        case 'weeks':
-          result.weeks = serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(Parameter, const [const FullType(int)]))
-              as Parameter<int>;
-          break;
-      }
-    }
-
-    return result.build();
-  }
+  @override
+  MulliganType deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      MulliganType.valueOf(serialized as String);
 }
 
 class _$FetchParameters extends FetchParameters {
@@ -331,16 +136,12 @@ class _$FetchParameters extends FetchParameters {
   @override
   final int deckSize;
   @override
-  final int landsInDeck;
-  @override
   final int numCards;
 
   factory _$FetchParameters([void Function(FetchParametersBuilder) updates]) =>
       (new FetchParametersBuilder()..update(updates)).build();
 
-  _$FetchParameters._(
-      {this.type, this.deckSize, this.landsInDeck, this.numCards})
-      : super._() {
+  _$FetchParameters._({this.type, this.deckSize, this.numCards}) : super._() {
     if (type == null) {
       throw new BuiltValueNullFieldError('FetchParameters', 'type');
     }
@@ -360,16 +161,13 @@ class _$FetchParameters extends FetchParameters {
     return other is FetchParameters &&
         type == other.type &&
         deckSize == other.deckSize &&
-        landsInDeck == other.landsInDeck &&
         numCards == other.numCards;
   }
 
   @override
   int get hashCode {
-    return $jf($jc(
-        $jc($jc($jc(0, type.hashCode), deckSize.hashCode),
-            landsInDeck.hashCode),
-        numCards.hashCode));
+    return $jf(
+        $jc($jc($jc(0, type.hashCode), deckSize.hashCode), numCards.hashCode));
   }
 
   @override
@@ -377,7 +175,6 @@ class _$FetchParameters extends FetchParameters {
     return (newBuiltValueToStringHelper('FetchParameters')
           ..add('type', type)
           ..add('deckSize', deckSize)
-          ..add('landsInDeck', landsInDeck)
           ..add('numCards', numCards))
         .toString();
   }
@@ -395,10 +192,6 @@ class FetchParametersBuilder
   int get deckSize => _$this._deckSize;
   set deckSize(int deckSize) => _$this._deckSize = deckSize;
 
-  int _landsInDeck;
-  int get landsInDeck => _$this._landsInDeck;
-  set landsInDeck(int landsInDeck) => _$this._landsInDeck = landsInDeck;
-
   int _numCards;
   int get numCards => _$this._numCards;
   set numCards(int numCards) => _$this._numCards = numCards;
@@ -409,7 +202,6 @@ class FetchParametersBuilder
     if (_$v != null) {
       _type = _$v.type;
       _deckSize = _$v.deckSize;
-      _landsInDeck = _$v.landsInDeck;
       _numCards = _$v.numCards;
       _$v = null;
     }
@@ -433,10 +225,7 @@ class FetchParametersBuilder
   _$FetchParameters build() {
     final _$result = _$v ??
         new _$FetchParameters._(
-            type: type,
-            deckSize: deckSize,
-            landsInDeck: landsInDeck,
-            numCards: numCards);
+            type: type, deckSize: deckSize, numCards: numCards);
     replace(_$result);
     return _$result;
   }
@@ -446,7 +235,7 @@ class _$Parameters extends Parameters {
   @override
   final Parameter<StatsType> type;
   @override
-  final Parameter<String> xAxis;
+  final Parameter<Object> xAxis;
   @override
   final Parameter<String> breakdownBy;
   @override
@@ -454,13 +243,13 @@ class _$Parameters extends Parameters {
   @override
   final Parameter<int> deckSize;
   @override
-  final Parameter<int> landsInDeck;
-  @override
   final Parameter<int> numCards;
   @override
   final Parameter<int> bestOf;
   @override
   final Parameter<Shuffling> shuffling;
+  @override
+  final Parameter<MulliganType> mulliganType;
   @override
   final Parameter<int> mulligans;
   @override
@@ -484,10 +273,10 @@ class _$Parameters extends Parameters {
       this.breakdownBy,
       this.options,
       this.deckSize,
-      this.landsInDeck,
       this.numCards,
       this.bestOf,
       this.shuffling,
+      this.mulliganType,
       this.mulligans,
       this.numDrawn,
       this.landsInHand,
@@ -510,9 +299,6 @@ class _$Parameters extends Parameters {
     if (deckSize == null) {
       throw new BuiltValueNullFieldError('Parameters', 'deckSize');
     }
-    if (landsInDeck == null) {
-      throw new BuiltValueNullFieldError('Parameters', 'landsInDeck');
-    }
     if (numCards == null) {
       throw new BuiltValueNullFieldError('Parameters', 'numCards');
     }
@@ -521,6 +307,9 @@ class _$Parameters extends Parameters {
     }
     if (shuffling == null) {
       throw new BuiltValueNullFieldError('Parameters', 'shuffling');
+    }
+    if (mulliganType == null) {
+      throw new BuiltValueNullFieldError('Parameters', 'mulliganType');
     }
     if (mulligans == null) {
       throw new BuiltValueNullFieldError('Parameters', 'mulligans');
@@ -561,10 +350,10 @@ class _$Parameters extends Parameters {
         breakdownBy == other.breakdownBy &&
         options == other.options &&
         deckSize == other.deckSize &&
-        landsInDeck == other.landsInDeck &&
         numCards == other.numCards &&
         bestOf == other.bestOf &&
         shuffling == other.shuffling &&
+        mulliganType == other.mulliganType &&
         mulligans == other.mulligans &&
         numDrawn == other.numDrawn &&
         landsInHand == other.landsInHand &&
@@ -595,10 +384,10 @@ class _$Parameters extends Parameters {
                                                         breakdownBy.hashCode),
                                                     options.hashCode),
                                                 deckSize.hashCode),
-                                            landsInDeck.hashCode),
-                                        numCards.hashCode),
-                                    bestOf.hashCode),
-                                shuffling.hashCode),
+                                            numCards.hashCode),
+                                        bestOf.hashCode),
+                                    shuffling.hashCode),
+                                mulliganType.hashCode),
                             mulligans.hashCode),
                         numDrawn.hashCode),
                     landsInHand.hashCode),
@@ -615,10 +404,10 @@ class _$Parameters extends Parameters {
           ..add('breakdownBy', breakdownBy)
           ..add('options', options)
           ..add('deckSize', deckSize)
-          ..add('landsInDeck', landsInDeck)
           ..add('numCards', numCards)
           ..add('bestOf', bestOf)
           ..add('shuffling', shuffling)
+          ..add('mulliganType', mulliganType)
           ..add('mulligans', mulligans)
           ..add('numDrawn', numDrawn)
           ..add('landsInHand', landsInHand)
@@ -641,9 +430,9 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
     onSet();
   }
 
-  Parameter<String> _xAxis;
-  Parameter<String> get xAxis => _$this._xAxis;
-  set xAxis(Parameter<String> xAxis) {
+  Parameter<Object> _xAxis;
+  Parameter<Object> get xAxis => _$this._xAxis;
+  set xAxis(Parameter<Object> xAxis) {
     _$this._xAxis = xAxis;
     onSet();
   }
@@ -669,13 +458,6 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
     onSet();
   }
 
-  Parameter<int> _landsInDeck;
-  Parameter<int> get landsInDeck => _$this._landsInDeck;
-  set landsInDeck(Parameter<int> landsInDeck) {
-    _$this._landsInDeck = landsInDeck;
-    onSet();
-  }
-
   Parameter<int> _numCards;
   Parameter<int> get numCards => _$this._numCards;
   set numCards(Parameter<int> numCards) {
@@ -694,6 +476,13 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
   Parameter<Shuffling> get shuffling => _$this._shuffling;
   set shuffling(Parameter<Shuffling> shuffling) {
     _$this._shuffling = shuffling;
+    onSet();
+  }
+
+  Parameter<MulliganType> _mulliganType;
+  Parameter<MulliganType> get mulliganType => _$this._mulliganType;
+  set mulliganType(Parameter<MulliganType> mulliganType) {
+    _$this._mulliganType = mulliganType;
     onSet();
   }
 
@@ -748,10 +537,10 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
       _breakdownBy = _$v.breakdownBy;
       _options = _$v.options;
       _deckSize = _$v.deckSize;
-      _landsInDeck = _$v.landsInDeck;
       _numCards = _$v.numCards;
       _bestOf = _$v.bestOf;
       _shuffling = _$v.shuffling;
+      _mulliganType = _$v.mulliganType;
       _mulligans = _$v.mulligans;
       _numDrawn = _$v.numDrawn;
       _landsInHand = _$v.landsInHand;
@@ -785,10 +574,10 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
             breakdownBy: breakdownBy,
             options: options,
             deckSize: deckSize,
-            landsInDeck: landsInDeck,
             numCards: numCards,
             bestOf: bestOf,
             shuffling: shuffling,
+            mulliganType: mulliganType,
             mulligans: mulligans,
             numDrawn: numDrawn,
             landsInHand: landsInHand,
@@ -1100,3 +889,42 @@ class OptionBuilder<T> implements Builder<Option<T>, OptionBuilder<T>> {
 }
 
 // ignore_for_file: always_put_control_body_on_new_line,always_specify_types,annotate_overrides,avoid_annotating_with_dynamic,avoid_as,avoid_catches_without_on_clauses,avoid_returning_this,lines_longer_than_80_chars,omit_local_variable_types,prefer_expression_function_bodies,sort_constructors_first,test_types_in_equals,unnecessary_const,unnecessary_new
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+Map<String, dynamic> _$StatsTypeToJson(StatsType instance) =>
+    <String, dynamic>{'name': instance.name};
+
+Map<String, dynamic> _$ShufflingToJson(Shuffling instance) =>
+    <String, dynamic>{'name': instance.name};
+
+Map<String, dynamic> _$MulliganTypeToJson(MulliganType instance) =>
+    <String, dynamic>{'name': instance.name};
+
+Map<String, dynamic> _$ParametersToJson(Parameters instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'xAxis': instance.xAxis,
+      'breakdownBy': instance.breakdownBy,
+      'options': instance.options,
+      'deckSize': instance.deckSize,
+      'numCards': instance.numCards,
+      'bestOf': instance.bestOf,
+      'shuffling': instance.shuffling,
+      'mulliganType': instance.mulliganType,
+      'mulligans': instance.mulligans,
+      'numDrawn': instance.numDrawn,
+      'landsInHand': instance.landsInHand,
+      'libraryPosition': instance.libraryPosition,
+      'decklistPosition': instance.decklistPosition,
+      'weeks': instance.weeks
+    };
+
+Parameter<T> _$ParameterFromJson<T>(Map<String, dynamic> json) {
+  return Parameter<T>();
+}
+
+Map<String, dynamic> _$ParameterToJson<T>(Parameter<T> instance) =>
+    <String, dynamic>{};

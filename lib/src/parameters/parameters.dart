@@ -3,10 +3,11 @@ import 'dart:math';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:built_value/standard_json_plugin.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'parameters.g.dart';
 
+@JsonSerializable(createFactory: false)
 class StatsType extends EnumClass {
   static Serializer<StatsType> get serializer => _$statsTypeSerializer;
 
@@ -25,6 +26,7 @@ class StatsType extends EnumClass {
 // not needed.
 enum DisplayOption { actual, expected, bugged, count, sampleSize }
 
+@JsonSerializable(createFactory: false)
 class Shuffling extends EnumClass {
   static Serializer<Shuffling> get serializer => _$shufflingSerializer;
 
@@ -37,13 +39,24 @@ class Shuffling extends EnumClass {
   static Shuffling valueOf(String name) => _$shufflingValueOf(name);
 }
 
+@JsonSerializable(createFactory: false)
+class MulliganType extends EnumClass {
+  static Serializer<MulliganType> get serializer => _$mulliganTypeSerializer;
+
+  static const MulliganType vancouver = _$vancouver;
+  static const MulliganType london = _$london;
+
+  const MulliganType._(String name) : super(name);
+
+  static BuiltSet<MulliganType> get values => _$mulliganTypeValues;
+  static MulliganType valueOf(String name) => _$mulliganTypeValueOf(name);
+}
+
 abstract class FetchParameters
     implements Built<FetchParameters, FetchParametersBuilder> {
   StatsType get type;
   @nullable
   int get deckSize;
-  @nullable
-  int get landsInDeck;
   @nullable
   int get numCards;
 
@@ -53,7 +66,6 @@ abstract class FetchParameters
       case StatsType.cardCopies:
         return 'type=${type.name}';
       case StatsType.libraryLands:
-        return 'type=${type.name}&deckSize=$deckSize&landsInDeck=$landsInDeck';
       case StatsType.cardPositions:
         return 'type=${type.name}&deckSize=$deckSize&numCards=$numCards';
       default:
@@ -68,10 +80,6 @@ abstract class FetchParameters
       case StatsType.cardCopies:
         return builder.build();
       case StatsType.libraryLands:
-        return (builder
-              ..deckSize = params.deckSize.value
-              ..landsInDeck = params.landsInDeck.value)
-            .build();
       case StatsType.cardPositions:
         return (builder
               ..deckSize = params.deckSize.value
@@ -87,25 +95,18 @@ abstract class FetchParameters
       _$FetchParameters;
 }
 
-@SerializersFor([Parameters])
-Serializers _paramSerializers = (_$_paramSerializers.toBuilder()
-      ..add(_NonSerializer())
-      ..addPlugin(_ShallowPlugin()))
-    .build();
-
 @BuiltValue(generateBuilderOnSetField: true, nestedBuilders: false)
+@JsonSerializable(createFactory: false)
 abstract class Parameters implements Built<Parameters, ParametersBuilder> {
-  static Serializer<Parameters> get serializer => _$parametersSerializer;
-
   Parameter<StatsType> get type;
-  Parameter<String> get xAxis;
+  Parameter<Object> get xAxis;
   Parameter<String> get breakdownBy;
   Parameter<DisplayOption> get options;
   Parameter<int> get deckSize;
-  Parameter<int> get landsInDeck;
   Parameter<int> get numCards;
   Parameter<int> get bestOf;
   Parameter<Shuffling> get shuffling;
+  Parameter<MulliganType> get mulliganType;
   Parameter<int> get mulligans;
   Parameter<int> get numDrawn;
   Parameter<int> get landsInHand;
@@ -113,10 +114,10 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
   Parameter<int> get decklistPosition;
   Parameter<int> get weeks;
 
+  @JsonKey(ignore: true)
   @memoized
-  @BuiltValueField(compare: false, serialize: false)
   BuiltMap<String, Parameter<dynamic>> get asMap =>
-      BuiltMap(_paramSerializers.serializeWith(serializer, this));
+      BuiltMap(_$ParametersToJson(this));
 
   Parameters._();
   factory Parameters([void Function(ParametersBuilder) updates]) = _$Parameters;
@@ -125,6 +126,7 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
 enum ParameterType { selection, toggles }
 
 @BuiltValue(generateBuilderOnSetField: true)
+@JsonSerializable()
 abstract class Parameter<T>
     implements Built<Parameter<T>, ParameterBuilder<T>> {
   ParameterType get type;
@@ -165,37 +167,7 @@ abstract class Option<T> implements Built<Option<T>, OptionBuilder<T>> {
           .build();
 }
 
-/// 'Serializer' that does nothing. Used to enable shallow conversion of
-/// Parameters to a BuiltMap.
-class _NonSerializer implements PrimitiveSerializer<Parameter<dynamic>> {
-  @override
-  final Iterable<Type> types = BuiltList<Type>([Parameter]);
-  @override
-  final String wireName = null;
-
-  @override
-  Object serialize(Serializers serializers, Parameter<dynamic> object,
-      {FullType specifiedType = FullType.unspecified}) {
-    return object;
-  }
-
-  @override
-  Parameter deserialize(Serializers serializers, Object serialized,
-      {FullType specifiedType = FullType.unspecified}) {
-    return serialized;
-  }
-}
-
-class _ShallowPlugin extends StandardJsonPlugin {
-  @override
-  Object afterSerialize(Object object, FullType specifiedType) {
-    return object is Parameter
-        ? object
-        : super.afterSerialize(object, specifiedType);
-  }
-}
-
-List<Option<String>> _getAxisOptions(StatsType type) {
+List<Option<String>> _getCommonAxisOptions(StatsType type) {
   const numDrawnLabels = {
     StatsType.handLands: 'Lands drawn',
     StatsType.libraryLands: 'Lands in library',
@@ -203,10 +175,13 @@ List<Option<String>> _getAxisOptions(StatsType type) {
     StatsType.cardCopies: 'Copies drawn'
   };
   return [
-    Option.of('deckSize', 'Cards in deck'),
-    if (type == StatsType.handLands) Option.of('landsInDeck', 'Lands in deck'),
+    if ((const [StatsType.handLands, StatsType.cardCopies]).contains(type))
+      Option.of('deckSize', 'Cards in deck'),
+    if (type == StatsType.handLands) Option.of('numCards', 'Lands in deck'),
+    if (type == StatsType.cardCopies) Option.of('numCards', 'Relevant cards'),
     Option.of('bestOf', 'Best of'),
     Option.of('shuffling', 'Shuffling'),
+    Option.of('mulliganType', 'Mulligan type'),
     Option.of('mulligans', 'Mulligans'),
     Option.of('numDrawn', numDrawnLabels[type]),
     if (type == StatsType.libraryLands)
@@ -277,7 +252,7 @@ void initialize(ParametersBuilder b, int maxWeek) {
   b.breakdownBy = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Breakdown by'
-    ..value = 'none');
+    ..value = 'numDrawn');
 
   b.options = Parameter((p) => p
     ..type = ParameterType.toggles
@@ -296,10 +271,6 @@ void initialize(ParametersBuilder b, int maxWeek) {
     ..options = ListBuilder([Option.of(40, '40'), Option.of(60, '60')])
     ..value = 60);
 
-  b.landsInDeck = Parameter((p) => p
-    ..type = ParameterType.selection
-    ..name = 'Lands in deck');
-
   b.numCards = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Number of relevant cards'
@@ -317,6 +288,15 @@ void initialize(ParametersBuilder b, int maxWeek) {
     ..options = ListBuilder([
       Option.of(Shuffling.normal, 'Normal', true),
       Option.of(Shuffling.smoothed, 'Smoothed', false)
+    ])
+    ..multiSelections = ListBuilder([Option.all(p.options.build())]));
+
+  b.mulliganType = Parameter((p) => p
+    ..type = ParameterType.toggles
+    ..name = 'Mulligan type'
+    ..options = ListBuilder([
+      Option.of(MulliganType.vancouver, 'Vancouver', true),
+      Option.of(MulliganType.london, 'London', true)
     ])
     ..multiSelections = ListBuilder([Option.all(p.options.build())]));
 
@@ -356,7 +336,9 @@ void initialize(ParametersBuilder b, int maxWeek) {
       Option.all(p.options.build().sublist(0, 2), 'Before smooth shuffling'),
       Option.all(p.options.build().sublist(2), 'After smooth shuffling'),
       Option.all(p.options.build().sublist(0, 16), 'Before War of the Spark'),
-      Option.all(p.options.build().sublist(16), 'After War of the Spark')
+      Option.all(p.options.build().sublist(16), 'After War of the Spark'),
+      Option.all(p.options.build().sublist(0, 21), 'Before M20'),
+      Option.all(p.options.build().sublist(22), 'After M20')
     ]));
 
   validate(Parameters(), b);
@@ -369,24 +351,30 @@ void validate(Parameters old, ParametersBuilder updated) {
   StatsType type = updated.type.value;
   if (old.type.value != type) {
     if (type == StatsType.cardPositions) {
-      if (!updated.options.options
-          .any((o) => o.value == DisplayOption.bugged)) {
-        updated.options = updated.options.rebuild((p) => p.options.insert(2,
-            Option.of(DisplayOption.bugged, 'Show prediction for bug', true)));
-      }
-    } else {
-      updated.options = updated.options.rebuild(
-          (p) => p.options.removeWhere((o) => o.value == DisplayOption.bugged));
+      updated.options = updated.options.rebuild((p) => p.options.insert(
+          2, Option.of(DisplayOption.bugged, 'Show prediction for bug', true)));
+    } else if (old.type.value == StatsType.cardPositions) {
+      updated.options = updated.options.rebuild((p) => p.options.removeAt(2));
     }
 
-    updated.xAxis = updated.xAxis.rebuild((b) => b.options =
-        ListBuilder([...updated.options.options, ..._getAxisOptions(type)]));
+    updated.xAxis = updated.xAxis.rebuild((b) => b.options = ListBuilder([
+          ..._getCommonAxisOptions(type),
+          Option.of(DisplayOption.actual, 'Actual values'),
+          Option.of(DisplayOption.expected, 'Expected values'),
+          if (type == StatsType.cardPositions)
+            Option.of(DisplayOption.bugged, 'Predicted values for bug'),
+          Option.of(DisplayOption.sampleSize, 'Sample sizes')
+        ]));
     updated.breakdownBy = updated.breakdownBy.rebuild((p) => p.options =
-        ListBuilder([Option.of('none', 'None'), ..._getAxisOptions(type)]));
+        ListBuilder(
+            [Option.of('none', 'None'), ..._getCommonAxisOptions(type)]));
   }
 
   void Function(ParameterBuilder<T>) errorSetter<T>(String error) {
     return (p) {
+      // Skip calling the actual setter on no-op calls because the setter forces
+      // creating a new copy for the next build even if nothing actually
+      // changed.
       if (p.error != error) {
         p.error = error;
       }
@@ -397,23 +385,20 @@ void validate(Parameters old, ParametersBuilder updated) {
   String error;
   bool isValueInOptions<T>(Parameter<T> p) =>
       p.options.any((o) => o.value == p.value);
-  if (!isValueInOptions(updated.xAxis)) {
-    error = unsetError;
-  } else if (updated.xAxis.value == updated.breakdownBy.value) {
-    error = 'Cannot break down by X axis factor.';
-  } else {
-    error = null;
+  String findAxisError<T>(Parameter<T> p) {
+    if (!isValueInOptions(updated.xAxis)) {
+      return unsetError;
+    } else if (updated.xAxis.value == updated.breakdownBy.value) {
+      return 'Cannot break down by X axis factor.';
+    } else {
+      return null;
+    }
   }
-  updated.xAxis = updated.xAxis.rebuild(errorSetter(error));
 
-  if (!isValueInOptions(updated.breakdownBy)) {
-    error = unsetError;
-  } else if (updated.xAxis.value == updated.breakdownBy.value) {
-    error = 'Cannot break down by X axis factor.';
-  } else {
-    error = null;
-  }
-  updated.breakdownBy = updated.breakdownBy.rebuild(errorSetter(error));
+  updated.xAxis =
+      updated.xAxis.rebuild(errorSetter(findAxisError(updated.xAxis)));
+  updated.breakdownBy = updated.breakdownBy
+      .rebuild(errorSetter(findAxisError(updated.breakdownBy)));
 
   error = updated.options.options
           .any((o) => o.selected && o.value != DisplayOption.count)
@@ -424,16 +409,22 @@ void validate(Parameters old, ParametersBuilder updated) {
   void Function(ParameterBuilder<T>) optionsSetter<T>(
       BuiltList<Option<T>> options) {
     return (p) {
-      if (p.options.build() != options) {
-        var oldSelections =
-            BuiltMap<T, bool>({for (var o in options) o.value: o.selected});
-        p
-          ..options = (options.toBuilder()
-            ..map((o) => o.rebuild(
-                (ob) => ob.selected = oldSelections[o.value] ?? o.selected)))
-          ..multiSelections = ListBuilder(
-              [if (p.type == ParameterType.toggles) Option.all(options)]);
+      if (options.length == p.options.length &&
+          Iterable<int>.generate(options.length).every((i) =>
+              options[i].value == p.options[i].value &&
+              options[i].label == p.options[i].label)) {
+        return;
       }
+
+      var oldSelections = BuiltMap<T, bool>(
+          {for (var o in p.options.build()) o.value: o.selected});
+      p
+        ..options = (options.toBuilder()
+          ..map((o) => o.rebuild(
+              (ob) => ob.selected = oldSelections[o.value] ?? o.selected)))
+        ..multiSelections = ListBuilder([
+          if (p.type == ParameterType.toggles) Option.all(p.options.build())
+        ]);
     };
   }
 
@@ -490,38 +481,26 @@ void validate(Parameters old, ParametersBuilder updated) {
 
   BuiltList<Option<int>> newOptions;
   if (old.type.value != type || updated.deckSize.value != old.deckSize.value) {
-    if (const [StatsType.handLands, StatsType.libraryLands].contains(type)) {
-      newOptions = BuiltList([
+    newOptions = BuiltList([
+      if (const [StatsType.handLands, StatsType.libraryLands]
+          .contains(type)) ...[
         if (updated.deckSize.value != 40) ..._range(10, 13),
         ..._range(14, 20),
         if (updated.deckSize.value != 40) ..._range(21, 28)
-      ]);
-    } else {
-      newOptions = BuiltList();
-    }
-    var paramType = type == StatsType.handLands
-        ? ParameterType.toggles
-        : ParameterType.selection;
-    updated.landsInDeck = updated.landsInDeck
-        .rebuild(paramUpdater(old.landsInDeck, newOptions, paramType));
-  }
+      ] else
+        if (type == StatsType.cardPositions) ...[
+          Option.of(0, 'Estimate for every card'),
+          ..._range(1, 4),
+          if (updated.deckSize.value != 60) ..._range(15, 18),
+          if (updated.deckSize.value != 40) ..._range(22, 25)
+        ] else
+          if (type == StatsType.cardCopies) ..._range(2, 4)
+    ]);
 
-  if (old.type.value != type) {
-    if (type == StatsType.cardPositions) {
-      newOptions = BuiltList([
-        Option.of(0, 'Estimate for every card'),
-        ..._range(1, 4),
-        if (updated.deckSize.value != 60) ..._range(15, 18),
-        if (updated.deckSize.value != 40) ..._range(22, 25)
-      ]);
-    } else if (type == StatsType.cardCopies) {
-      newOptions = _builtRange(2, 4);
-    } else {
-      newOptions = BuiltList();
-    }
-    var paramType = type == StatsType.cardCopies
-        ? ParameterType.toggles
-        : ParameterType.selection;
+    var paramType =
+        const [StatsType.handLands, StatsType.cardCopies].contains(type)
+            ? ParameterType.toggles
+            : ParameterType.selection;
     updated.numCards = updated.numCards
         .rebuild(paramUpdater(old.numCards, newOptions, paramType));
   }
@@ -549,34 +528,56 @@ void validate(Parameters old, ParametersBuilder updated) {
     }
   });
 
+  bool isValueSelected<T>(Parameter<T> p, T value) {
+    return p.options.any((o) => o.selected && o.value == value);
+  }
+
+  var mulliganTypesForSelectedWeeks = BuiltList.of([
+    if (updated.weeks.options.any((week) => week.selected && week.value < 22))
+      MulliganType.vancouver,
+    if (updated.weeks.options
+        .any((week) => week.selected && (week.value == 18 || week.value >= 21)))
+      MulliganType.london
+  ]);
+  updated.mulliganType = updated.mulliganType.rebuild((p) {
+    multiSelectionsUpdater(old.mulliganType)(p);
+    if (!isAnyValueSelected(p)) {
+      error = unsetError;
+    } else if (mulliganTypesForSelectedWeeks.length == 1 &&
+        !isValueSelected(
+            updated.mulliganType, mulliganTypesForSelectedWeeks[0])) {
+      error = mulliganTypesForSelectedWeeks[0].name +
+          ' mulligan not used in selected weeks';
+    } else {
+      error = null;
+    }
+    errorSetter(error)(p);
+  });
+
   updated.mulligans = updated.mulligans.rebuild(defaultErrorSetter());
+
+  int firstSelected(Parameter<int> p) {
+    return p.options.firstWhere((o) => o.selected, orElse: () => null)?.value;
+  }
+
+  int lastSelected(Parameter<int> p) {
+    return p.options.lastWhere((o) => o.selected, orElse: () => null)?.value;
+  }
 
   int maxPossibleDrawn = [
     if (type == StatsType.libraryLands)
-      if (updated.breakdownBy.value == 'libraryPosition')
-        10
-      else
-        (updated.libraryPosition.options.lastWhere((o) => o.selected).value ??
-                9) +
-            1
+      (lastSelected(updated.libraryPosition) ?? 9) + 1
     else
-      if (updated.breakdownBy.value == 'mulligans')
+      if (isValueSelected(updated.mulliganType, MulliganType.london))
         7
       else
-        7 - (updated.mulligans.options.lastWhere((o) => o.selected).value ?? 0),
-    if (type == StatsType.libraryLands &&
-        updated.breakdownBy.value == 'landsInHand')
-      (updated.landsInDeck.value ?? 25) -
-          (updated.landsInHand.options.firstWhere((o) => o.selected).value ??
-              0),
-    if (type == StatsType.cardPositions &&
-        updated.breakdownBy.value != 'numCards')
-      max(updated.numCards.options.lastWhere((o) => o.selected).value ?? 25, 1),
-    if (type == StatsType.cardCopies)
-      if (updated.breakdownBy.value == 'numCards')
-        4
-      else
-        updated.numCards.options.lastWhere((o) => o.selected).value ?? 4
+        7 - (lastSelected(updated.mulligans) ?? 0),
+    if (type == StatsType.libraryLands)
+      (updated.numCards.value ?? 25) -
+          (firstSelected(updated.landsInHand) ?? 0),
+    if (type == StatsType.cardPositions)
+      max(lastSelected(updated.numCards) ?? 25, 1),
+    if (type == StatsType.cardCopies) lastSelected(updated.numCards) ?? 4
   ].reduce(min);
   updated.numDrawn = updated.numDrawn
       .rebuild(paramUpdater(old.numDrawn, _builtRange(0, maxPossibleDrawn)));
@@ -598,10 +599,7 @@ void validate(Parameters old, ParametersBuilder updated) {
       .rebuild(paramUpdater(old.libraryPosition, newOptions));
 
   if (type == StatsType.cardPositions) {
-    int minBlockSize = updated.breakdownBy.value == 'numCards'
-        ? 1
-        : max(updated.numCards.options.firstWhere((o) => o.selected).value ?? 1,
-            1);
+    int minBlockSize = max(updated.numCards.value ?? 1, 1);
     newOptions =
         _builtRange(0, updated.deckSize.value - minBlockSize + 1, (i) => i + 1);
   } else {
