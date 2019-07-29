@@ -9,41 +9,40 @@ part of 'data.dart';
 Serializers _$dataSerializers = (new Serializers().toBuilder()
       ..add(CardsByCountEntry.serializer)
       ..add(CardsByPositionEntry.serializer)
-      ..add(CardsGroup.serializer)
-      ..add(LandsGroup.serializer)
+      ..add(Group.serializer)
       ..add(LandsInHandEntry.serializer)
       ..add(LandsInLibraryEntry.serializer)
+      ..add(MulliganType.serializer)
       ..add(Shuffling.serializer)
       ..add(StatsType.serializer)
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(BuiltList, const [
               const FullType(BuiltList, const [
-                const FullType(BuiltList, const [const FullType(int)])
+                const FullType(BuiltList, const [const FullType(num)])
               ])
             ])
           ]),
-          () => new ListBuilder<BuiltList<BuiltList<BuiltList<int>>>>())
+          () => new ListBuilder<BuiltList<BuiltList<BuiltList<num>>>>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(BuiltList, const [
-              const FullType(BuiltList, const [const FullType(int)])
+              const FullType(BuiltList, const [const FullType(num)])
             ])
           ]),
-          () => new ListBuilder<BuiltList<BuiltList<int>>>())
+          () => new ListBuilder<BuiltList<BuiltList<num>>>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
-            const FullType(BuiltList, const [const FullType(int)])
+            const FullType(BuiltList, const [const FullType(num)])
           ]),
-          () => new ListBuilder<BuiltList<int>>())
+          () => new ListBuilder<BuiltList<num>>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
-            const FullType(BuiltList, const [const FullType(int)])
+            const FullType(BuiltList, const [const FullType(num)])
           ]),
-          () => new ListBuilder<BuiltList<int>>()))
+          () => new ListBuilder<BuiltList<num>>()))
     .build();
-Serializer<LandsGroup> _$landsGroupSerializer = new _$LandsGroupSerializer();
-Serializer<CardsGroup> _$cardsGroupSerializer = new _$CardsGroupSerializer();
+Serializer<Group> _$groupSerializer = new _$GroupSerializer();
 Serializer<LandsInHandEntry> _$landsInHandEntrySerializer =
     new _$LandsInHandEntrySerializer();
 Serializer<LandsInLibraryEntry> _$landsInLibraryEntrySerializer =
@@ -53,87 +52,14 @@ Serializer<CardsByPositionEntry> _$cardsByPositionEntrySerializer =
 Serializer<CardsByCountEntry> _$cardsByCountEntrySerializer =
     new _$CardsByCountEntrySerializer();
 
-class _$LandsGroupSerializer implements StructuredSerializer<LandsGroup> {
+class _$GroupSerializer implements StructuredSerializer<Group> {
   @override
-  final Iterable<Type> types = const [LandsGroup, _$LandsGroup];
+  final Iterable<Type> types = const [Group, _$Group];
   @override
-  final String wireName = 'LandsGroup';
+  final String wireName = 'Group';
 
   @override
-  Iterable serialize(Serializers serializers, LandsGroup object,
-      {FullType specifiedType = FullType.unspecified}) {
-    final result = <Object>[
-      'landsInDeck',
-      serializers.serialize(object.landsInDeck,
-          specifiedType: const FullType(int)),
-      'deckSize',
-      serializers.serialize(object.deckSize,
-          specifiedType: const FullType(int)),
-      'bestOf',
-      serializers.serialize(object.bestOf, specifiedType: const FullType(int)),
-      'shuffling',
-      serializers.serialize(object.shuffling,
-          specifiedType: const FullType(Shuffling)),
-      'week',
-      serializers.serialize(object.week, specifiedType: const FullType(int)),
-      'type',
-      serializers.serialize(object.type,
-          specifiedType: const FullType(StatsType)),
-    ];
-
-    return result;
-  }
-
-  @override
-  LandsGroup deserialize(Serializers serializers, Iterable serialized,
-      {FullType specifiedType = FullType.unspecified}) {
-    final result = new LandsGroupBuilder();
-
-    final iterator = serialized.iterator;
-    while (iterator.moveNext()) {
-      final key = iterator.current as String;
-      iterator.moveNext();
-      final dynamic value = iterator.current;
-      switch (key) {
-        case 'landsInDeck':
-          result.landsInDeck = serializers.deserialize(value,
-              specifiedType: const FullType(int)) as int;
-          break;
-        case 'deckSize':
-          result.deckSize = serializers.deserialize(value,
-              specifiedType: const FullType(int)) as int;
-          break;
-        case 'bestOf':
-          result.bestOf = serializers.deserialize(value,
-              specifiedType: const FullType(int)) as int;
-          break;
-        case 'shuffling':
-          result.shuffling = serializers.deserialize(value,
-              specifiedType: const FullType(Shuffling)) as Shuffling;
-          break;
-        case 'week':
-          result.week = serializers.deserialize(value,
-              specifiedType: const FullType(int)) as int;
-          break;
-        case 'type':
-          result.type = serializers.deserialize(value,
-              specifiedType: const FullType(StatsType)) as StatsType;
-          break;
-      }
-    }
-
-    return result.build();
-  }
-}
-
-class _$CardsGroupSerializer implements StructuredSerializer<CardsGroup> {
-  @override
-  final Iterable<Type> types = const [CardsGroup, _$CardsGroup];
-  @override
-  final String wireName = 'CardsGroup';
-
-  @override
-  Iterable serialize(Serializers serializers, CardsGroup object,
+  Iterable serialize(Serializers serializers, Group object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'deckSize',
@@ -147,6 +73,9 @@ class _$CardsGroupSerializer implements StructuredSerializer<CardsGroup> {
       'shuffling',
       serializers.serialize(object.shuffling,
           specifiedType: const FullType(Shuffling)),
+      'mulliganType',
+      serializers.serialize(object.mulliganType,
+          specifiedType: const FullType(MulliganType)),
       'week',
       serializers.serialize(object.week, specifiedType: const FullType(int)),
       'type',
@@ -158,9 +87,9 @@ class _$CardsGroupSerializer implements StructuredSerializer<CardsGroup> {
   }
 
   @override
-  CardsGroup deserialize(Serializers serializers, Iterable serialized,
+  Group deserialize(Serializers serializers, Iterable serialized,
       {FullType specifiedType = FullType.unspecified}) {
-    final result = new CardsGroupBuilder();
+    final result = new GroupBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -183,6 +112,10 @@ class _$CardsGroupSerializer implements StructuredSerializer<CardsGroup> {
         case 'shuffling':
           result.shuffling = serializers.deserialize(value,
               specifiedType: const FullType(Shuffling)) as Shuffling;
+          break;
+        case 'mulliganType':
+          result.mulliganType = serializers.deserialize(value,
+              specifiedType: const FullType(MulliganType)) as MulliganType;
           break;
         case 'week':
           result.week = serializers.deserialize(value,
@@ -211,12 +144,11 @@ class _$LandsInHandEntrySerializer
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
-      serializers.serialize(object.group,
-          specifiedType: const FullType(LandsGroup)),
+      serializers.serialize(object.group, specifiedType: const FullType(Group)),
       'data',
       serializers.serialize(object.data,
           specifiedType: const FullType(BuiltList, const [
-            const FullType(BuiltList, const [const FullType(int)])
+            const FullType(BuiltList, const [const FullType(num)])
           ])),
     ];
 
@@ -236,12 +168,12 @@ class _$LandsInHandEntrySerializer
       switch (key) {
         case 'group':
           result.group.replace(serializers.deserialize(value,
-              specifiedType: const FullType(LandsGroup)) as LandsGroup);
+              specifiedType: const FullType(Group)) as Group);
           break;
         case 'data':
           result.data.replace(serializers.deserialize(value,
               specifiedType: const FullType(BuiltList, const [
-                const FullType(BuiltList, const [const FullType(int)])
+                const FullType(BuiltList, const [const FullType(num)])
               ])) as BuiltList);
           break;
       }
@@ -266,14 +198,13 @@ class _$LandsInLibraryEntrySerializer
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
-      serializers.serialize(object.group,
-          specifiedType: const FullType(LandsGroup)),
+      serializers.serialize(object.group, specifiedType: const FullType(Group)),
       'data',
       serializers.serialize(object.data,
           specifiedType: const FullType(BuiltList, const [
             const FullType(BuiltList, const [
               const FullType(BuiltList, const [
-                const FullType(BuiltList, const [const FullType(int)])
+                const FullType(BuiltList, const [const FullType(num)])
               ])
             ])
           ])),
@@ -295,14 +226,14 @@ class _$LandsInLibraryEntrySerializer
       switch (key) {
         case 'group':
           result.group.replace(serializers.deserialize(value,
-              specifiedType: const FullType(LandsGroup)) as LandsGroup);
+              specifiedType: const FullType(Group)) as Group);
           break;
         case 'data':
           result.data.replace(serializers.deserialize(value,
               specifiedType: const FullType(BuiltList, const [
                 const FullType(BuiltList, const [
                   const FullType(BuiltList, const [
-                    const FullType(BuiltList, const [const FullType(int)])
+                    const FullType(BuiltList, const [const FullType(num)])
                   ])
                 ])
               ])) as BuiltList);
@@ -329,13 +260,12 @@ class _$CardsByPositionEntrySerializer
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
-      serializers.serialize(object.group,
-          specifiedType: const FullType(CardsGroup)),
+      serializers.serialize(object.group, specifiedType: const FullType(Group)),
       'data',
       serializers.serialize(object.data,
           specifiedType: const FullType(BuiltList, const [
             const FullType(BuiltList, const [
-              const FullType(BuiltList, const [const FullType(int)])
+              const FullType(BuiltList, const [const FullType(num)])
             ])
           ])),
     ];
@@ -356,13 +286,13 @@ class _$CardsByPositionEntrySerializer
       switch (key) {
         case 'group':
           result.group.replace(serializers.deserialize(value,
-              specifiedType: const FullType(CardsGroup)) as CardsGroup);
+              specifiedType: const FullType(Group)) as Group);
           break;
         case 'data':
           result.data.replace(serializers.deserialize(value,
               specifiedType: const FullType(BuiltList, const [
                 const FullType(BuiltList, const [
-                  const FullType(BuiltList, const [const FullType(int)])
+                  const FullType(BuiltList, const [const FullType(num)])
                 ])
               ])) as BuiltList);
           break;
@@ -385,12 +315,11 @@ class _$CardsByCountEntrySerializer
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
-      serializers.serialize(object.group,
-          specifiedType: const FullType(CardsGroup)),
+      serializers.serialize(object.group, specifiedType: const FullType(Group)),
       'data',
       serializers.serialize(object.data,
           specifiedType: const FullType(BuiltList, const [
-            const FullType(BuiltList, const [const FullType(int)])
+            const FullType(BuiltList, const [const FullType(num)])
           ])),
     ];
 
@@ -410,12 +339,12 @@ class _$CardsByCountEntrySerializer
       switch (key) {
         case 'group':
           result.group.replace(serializers.deserialize(value,
-              specifiedType: const FullType(CardsGroup)) as CardsGroup);
+              specifiedType: const FullType(Group)) as Group);
           break;
         case 'data':
           result.data.replace(serializers.deserialize(value,
               specifiedType: const FullType(BuiltList, const [
-                const FullType(BuiltList, const [const FullType(int)])
+                const FullType(BuiltList, const [const FullType(num)])
               ])) as BuiltList);
           break;
       }
@@ -425,166 +354,7 @@ class _$CardsByCountEntrySerializer
   }
 }
 
-class _$LandsGroup extends LandsGroup {
-  @override
-  final int landsInDeck;
-  @override
-  final int deckSize;
-  @override
-  final int bestOf;
-  @override
-  final Shuffling shuffling;
-  @override
-  final int week;
-  @override
-  final StatsType type;
-
-  factory _$LandsGroup([void Function(LandsGroupBuilder) updates]) =>
-      (new LandsGroupBuilder()..update(updates)).build();
-
-  _$LandsGroup._(
-      {this.landsInDeck,
-      this.deckSize,
-      this.bestOf,
-      this.shuffling,
-      this.week,
-      this.type})
-      : super._() {
-    if (landsInDeck == null) {
-      throw new BuiltValueNullFieldError('LandsGroup', 'landsInDeck');
-    }
-    if (deckSize == null) {
-      throw new BuiltValueNullFieldError('LandsGroup', 'deckSize');
-    }
-    if (bestOf == null) {
-      throw new BuiltValueNullFieldError('LandsGroup', 'bestOf');
-    }
-    if (shuffling == null) {
-      throw new BuiltValueNullFieldError('LandsGroup', 'shuffling');
-    }
-    if (week == null) {
-      throw new BuiltValueNullFieldError('LandsGroup', 'week');
-    }
-    if (type == null) {
-      throw new BuiltValueNullFieldError('LandsGroup', 'type');
-    }
-  }
-
-  @override
-  LandsGroup rebuild(void Function(LandsGroupBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  LandsGroupBuilder toBuilder() => new LandsGroupBuilder()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is LandsGroup &&
-        landsInDeck == other.landsInDeck &&
-        deckSize == other.deckSize &&
-        bestOf == other.bestOf &&
-        shuffling == other.shuffling &&
-        week == other.week &&
-        type == other.type;
-  }
-
-  @override
-  int get hashCode {
-    return $jf($jc(
-        $jc(
-            $jc(
-                $jc($jc($jc(0, landsInDeck.hashCode), deckSize.hashCode),
-                    bestOf.hashCode),
-                shuffling.hashCode),
-            week.hashCode),
-        type.hashCode));
-  }
-
-  @override
-  String toString() {
-    return (newBuiltValueToStringHelper('LandsGroup')
-          ..add('landsInDeck', landsInDeck)
-          ..add('deckSize', deckSize)
-          ..add('bestOf', bestOf)
-          ..add('shuffling', shuffling)
-          ..add('week', week)
-          ..add('type', type))
-        .toString();
-  }
-}
-
-class LandsGroupBuilder implements Builder<LandsGroup, LandsGroupBuilder> {
-  _$LandsGroup _$v;
-
-  int _landsInDeck;
-  int get landsInDeck => _$this._landsInDeck;
-  set landsInDeck(int landsInDeck) => _$this._landsInDeck = landsInDeck;
-
-  int _deckSize;
-  int get deckSize => _$this._deckSize;
-  set deckSize(int deckSize) => _$this._deckSize = deckSize;
-
-  int _bestOf;
-  int get bestOf => _$this._bestOf;
-  set bestOf(int bestOf) => _$this._bestOf = bestOf;
-
-  Shuffling _shuffling;
-  Shuffling get shuffling => _$this._shuffling;
-  set shuffling(Shuffling shuffling) => _$this._shuffling = shuffling;
-
-  int _week;
-  int get week => _$this._week;
-  set week(int week) => _$this._week = week;
-
-  StatsType _type;
-  StatsType get type => _$this._type;
-  set type(StatsType type) => _$this._type = type;
-
-  LandsGroupBuilder();
-
-  LandsGroupBuilder get _$this {
-    if (_$v != null) {
-      _landsInDeck = _$v.landsInDeck;
-      _deckSize = _$v.deckSize;
-      _bestOf = _$v.bestOf;
-      _shuffling = _$v.shuffling;
-      _week = _$v.week;
-      _type = _$v.type;
-      _$v = null;
-    }
-    return this;
-  }
-
-  @override
-  void replace(LandsGroup other) {
-    if (other == null) {
-      throw new ArgumentError.notNull('other');
-    }
-    _$v = other as _$LandsGroup;
-  }
-
-  @override
-  void update(void Function(LandsGroupBuilder) updates) {
-    if (updates != null) updates(this);
-  }
-
-  @override
-  _$LandsGroup build() {
-    final _$result = _$v ??
-        new _$LandsGroup._(
-            landsInDeck: landsInDeck,
-            deckSize: deckSize,
-            bestOf: bestOf,
-            shuffling: shuffling,
-            week: week,
-            type: type);
-    replace(_$result);
-    return _$result;
-  }
-}
-
-class _$CardsGroup extends CardsGroup {
+class _$Group extends Group {
   @override
   final int deckSize;
   @override
@@ -594,56 +364,67 @@ class _$CardsGroup extends CardsGroup {
   @override
   final Shuffling shuffling;
   @override
+  final MulliganType mulliganType;
+  @override
   final int week;
   @override
   final StatsType type;
+  BuiltMap<String, dynamic> __asMap;
 
-  factory _$CardsGroup([void Function(CardsGroupBuilder) updates]) =>
-      (new CardsGroupBuilder()..update(updates)).build();
+  factory _$Group([void Function(GroupBuilder) updates]) =>
+      (new GroupBuilder()..update(updates)).build();
 
-  _$CardsGroup._(
+  _$Group._(
       {this.deckSize,
       this.numCards,
       this.bestOf,
       this.shuffling,
+      this.mulliganType,
       this.week,
       this.type})
       : super._() {
     if (deckSize == null) {
-      throw new BuiltValueNullFieldError('CardsGroup', 'deckSize');
+      throw new BuiltValueNullFieldError('Group', 'deckSize');
     }
     if (numCards == null) {
-      throw new BuiltValueNullFieldError('CardsGroup', 'numCards');
+      throw new BuiltValueNullFieldError('Group', 'numCards');
     }
     if (bestOf == null) {
-      throw new BuiltValueNullFieldError('CardsGroup', 'bestOf');
+      throw new BuiltValueNullFieldError('Group', 'bestOf');
     }
     if (shuffling == null) {
-      throw new BuiltValueNullFieldError('CardsGroup', 'shuffling');
+      throw new BuiltValueNullFieldError('Group', 'shuffling');
+    }
+    if (mulliganType == null) {
+      throw new BuiltValueNullFieldError('Group', 'mulliganType');
     }
     if (week == null) {
-      throw new BuiltValueNullFieldError('CardsGroup', 'week');
+      throw new BuiltValueNullFieldError('Group', 'week');
     }
     if (type == null) {
-      throw new BuiltValueNullFieldError('CardsGroup', 'type');
+      throw new BuiltValueNullFieldError('Group', 'type');
     }
   }
 
   @override
-  CardsGroup rebuild(void Function(CardsGroupBuilder) updates) =>
+  BuiltMap<String, dynamic> get asMap => __asMap ??= super.asMap;
+
+  @override
+  Group rebuild(void Function(GroupBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  CardsGroupBuilder toBuilder() => new CardsGroupBuilder()..replace(this);
+  GroupBuilder toBuilder() => new GroupBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CardsGroup &&
+    return other is Group &&
         deckSize == other.deckSize &&
         numCards == other.numCards &&
         bestOf == other.bestOf &&
         shuffling == other.shuffling &&
+        mulliganType == other.mulliganType &&
         week == other.week &&
         type == other.type;
   }
@@ -653,28 +434,31 @@ class _$CardsGroup extends CardsGroup {
     return $jf($jc(
         $jc(
             $jc(
-                $jc($jc($jc(0, deckSize.hashCode), numCards.hashCode),
-                    bestOf.hashCode),
-                shuffling.hashCode),
+                $jc(
+                    $jc($jc($jc(0, deckSize.hashCode), numCards.hashCode),
+                        bestOf.hashCode),
+                    shuffling.hashCode),
+                mulliganType.hashCode),
             week.hashCode),
         type.hashCode));
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper('CardsGroup')
+    return (newBuiltValueToStringHelper('Group')
           ..add('deckSize', deckSize)
           ..add('numCards', numCards)
           ..add('bestOf', bestOf)
           ..add('shuffling', shuffling)
+          ..add('mulliganType', mulliganType)
           ..add('week', week)
           ..add('type', type))
         .toString();
   }
 }
 
-class CardsGroupBuilder implements Builder<CardsGroup, CardsGroupBuilder> {
-  _$CardsGroup _$v;
+class GroupBuilder implements Builder<Group, GroupBuilder> {
+  _$Group _$v;
 
   int _deckSize;
   int get deckSize => _$this._deckSize;
@@ -692,6 +476,11 @@ class CardsGroupBuilder implements Builder<CardsGroup, CardsGroupBuilder> {
   Shuffling get shuffling => _$this._shuffling;
   set shuffling(Shuffling shuffling) => _$this._shuffling = shuffling;
 
+  MulliganType _mulliganType;
+  MulliganType get mulliganType => _$this._mulliganType;
+  set mulliganType(MulliganType mulliganType) =>
+      _$this._mulliganType = mulliganType;
+
   int _week;
   int get week => _$this._week;
   set week(int week) => _$this._week = week;
@@ -700,14 +489,15 @@ class CardsGroupBuilder implements Builder<CardsGroup, CardsGroupBuilder> {
   StatsType get type => _$this._type;
   set type(StatsType type) => _$this._type = type;
 
-  CardsGroupBuilder();
+  GroupBuilder();
 
-  CardsGroupBuilder get _$this {
+  GroupBuilder get _$this {
     if (_$v != null) {
       _deckSize = _$v.deckSize;
       _numCards = _$v.numCards;
       _bestOf = _$v.bestOf;
       _shuffling = _$v.shuffling;
+      _mulliganType = _$v.mulliganType;
       _week = _$v.week;
       _type = _$v.type;
       _$v = null;
@@ -716,26 +506,27 @@ class CardsGroupBuilder implements Builder<CardsGroup, CardsGroupBuilder> {
   }
 
   @override
-  void replace(CardsGroup other) {
+  void replace(Group other) {
     if (other == null) {
       throw new ArgumentError.notNull('other');
     }
-    _$v = other as _$CardsGroup;
+    _$v = other as _$Group;
   }
 
   @override
-  void update(void Function(CardsGroupBuilder) updates) {
+  void update(void Function(GroupBuilder) updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  _$CardsGroup build() {
+  _$Group build() {
     final _$result = _$v ??
-        new _$CardsGroup._(
+        new _$Group._(
             deckSize: deckSize,
             numCards: numCards,
             bestOf: bestOf,
             shuffling: shuffling,
+            mulliganType: mulliganType,
             week: week,
             type: type);
     replace(_$result);
@@ -745,9 +536,9 @@ class CardsGroupBuilder implements Builder<CardsGroup, CardsGroupBuilder> {
 
 class _$LandsInHandEntry extends LandsInHandEntry {
   @override
-  final LandsGroup group;
+  final Group group;
   @override
-  final BuiltList<BuiltList<int>> data;
+  final BuiltList<BuiltList<num>> data;
 
   factory _$LandsInHandEntry(
           [void Function(LandsInHandEntryBuilder) updates]) =>
@@ -796,14 +587,14 @@ class LandsInHandEntryBuilder
     implements Builder<LandsInHandEntry, LandsInHandEntryBuilder> {
   _$LandsInHandEntry _$v;
 
-  LandsGroupBuilder _group;
-  LandsGroupBuilder get group => _$this._group ??= new LandsGroupBuilder();
-  set group(LandsGroupBuilder group) => _$this._group = group;
+  GroupBuilder _group;
+  GroupBuilder get group => _$this._group ??= new GroupBuilder();
+  set group(GroupBuilder group) => _$this._group = group;
 
-  ListBuilder<BuiltList<int>> _data;
-  ListBuilder<BuiltList<int>> get data =>
-      _$this._data ??= new ListBuilder<BuiltList<int>>();
-  set data(ListBuilder<BuiltList<int>> data) => _$this._data = data;
+  ListBuilder<BuiltList<num>> _data;
+  ListBuilder<BuiltList<num>> get data =>
+      _$this._data ??= new ListBuilder<BuiltList<num>>();
+  set data(ListBuilder<BuiltList<num>> data) => _$this._data = data;
 
   LandsInHandEntryBuilder();
 
@@ -855,9 +646,9 @@ class LandsInHandEntryBuilder
 
 class _$LandsInLibraryEntry extends LandsInLibraryEntry {
   @override
-  final LandsGroup group;
+  final Group group;
   @override
-  final BuiltList<BuiltList<BuiltList<BuiltList<int>>>> data;
+  final BuiltList<BuiltList<BuiltList<BuiltList<num>>>> data;
 
   factory _$LandsInLibraryEntry(
           [void Function(LandsInLibraryEntryBuilder) updates]) =>
@@ -907,14 +698,14 @@ class LandsInLibraryEntryBuilder
     implements Builder<LandsInLibraryEntry, LandsInLibraryEntryBuilder> {
   _$LandsInLibraryEntry _$v;
 
-  LandsGroupBuilder _group;
-  LandsGroupBuilder get group => _$this._group ??= new LandsGroupBuilder();
-  set group(LandsGroupBuilder group) => _$this._group = group;
+  GroupBuilder _group;
+  GroupBuilder get group => _$this._group ??= new GroupBuilder();
+  set group(GroupBuilder group) => _$this._group = group;
 
-  ListBuilder<BuiltList<BuiltList<BuiltList<int>>>> _data;
-  ListBuilder<BuiltList<BuiltList<BuiltList<int>>>> get data =>
-      _$this._data ??= new ListBuilder<BuiltList<BuiltList<BuiltList<int>>>>();
-  set data(ListBuilder<BuiltList<BuiltList<BuiltList<int>>>> data) =>
+  ListBuilder<BuiltList<BuiltList<BuiltList<num>>>> _data;
+  ListBuilder<BuiltList<BuiltList<BuiltList<num>>>> get data =>
+      _$this._data ??= new ListBuilder<BuiltList<BuiltList<BuiltList<num>>>>();
+  set data(ListBuilder<BuiltList<BuiltList<BuiltList<num>>>> data) =>
       _$this._data = data;
 
   LandsInLibraryEntryBuilder();
@@ -967,9 +758,9 @@ class LandsInLibraryEntryBuilder
 
 class _$CardsByPositionEntry extends CardsByPositionEntry {
   @override
-  final CardsGroup group;
+  final Group group;
   @override
-  final BuiltList<BuiltList<BuiltList<int>>> data;
+  final BuiltList<BuiltList<BuiltList<num>>> data;
 
   factory _$CardsByPositionEntry(
           [void Function(CardsByPositionEntryBuilder) updates]) =>
@@ -1019,14 +810,14 @@ class CardsByPositionEntryBuilder
     implements Builder<CardsByPositionEntry, CardsByPositionEntryBuilder> {
   _$CardsByPositionEntry _$v;
 
-  CardsGroupBuilder _group;
-  CardsGroupBuilder get group => _$this._group ??= new CardsGroupBuilder();
-  set group(CardsGroupBuilder group) => _$this._group = group;
+  GroupBuilder _group;
+  GroupBuilder get group => _$this._group ??= new GroupBuilder();
+  set group(GroupBuilder group) => _$this._group = group;
 
-  ListBuilder<BuiltList<BuiltList<int>>> _data;
-  ListBuilder<BuiltList<BuiltList<int>>> get data =>
-      _$this._data ??= new ListBuilder<BuiltList<BuiltList<int>>>();
-  set data(ListBuilder<BuiltList<BuiltList<int>>> data) => _$this._data = data;
+  ListBuilder<BuiltList<BuiltList<num>>> _data;
+  ListBuilder<BuiltList<BuiltList<num>>> get data =>
+      _$this._data ??= new ListBuilder<BuiltList<BuiltList<num>>>();
+  set data(ListBuilder<BuiltList<BuiltList<num>>> data) => _$this._data = data;
 
   CardsByPositionEntryBuilder();
 
@@ -1079,9 +870,9 @@ class CardsByPositionEntryBuilder
 
 class _$CardsByCountEntry extends CardsByCountEntry {
   @override
-  final CardsGroup group;
+  final Group group;
   @override
-  final BuiltList<BuiltList<int>> data;
+  final BuiltList<BuiltList<num>> data;
 
   factory _$CardsByCountEntry(
           [void Function(CardsByCountEntryBuilder) updates]) =>
@@ -1130,14 +921,14 @@ class CardsByCountEntryBuilder
     implements Builder<CardsByCountEntry, CardsByCountEntryBuilder> {
   _$CardsByCountEntry _$v;
 
-  CardsGroupBuilder _group;
-  CardsGroupBuilder get group => _$this._group ??= new CardsGroupBuilder();
-  set group(CardsGroupBuilder group) => _$this._group = group;
+  GroupBuilder _group;
+  GroupBuilder get group => _$this._group ??= new GroupBuilder();
+  set group(GroupBuilder group) => _$this._group = group;
 
-  ListBuilder<BuiltList<int>> _data;
-  ListBuilder<BuiltList<int>> get data =>
-      _$this._data ??= new ListBuilder<BuiltList<int>>();
-  set data(ListBuilder<BuiltList<int>> data) => _$this._data = data;
+  ListBuilder<BuiltList<num>> _data;
+  ListBuilder<BuiltList<num>> get data =>
+      _$this._data ??= new ListBuilder<BuiltList<num>>();
+  set data(ListBuilder<BuiltList<num>> data) => _$this._data = data;
 
   CardsByCountEntryBuilder();
 
@@ -1188,3 +979,17 @@ class CardsByCountEntryBuilder
 }
 
 // ignore_for_file: always_put_control_body_on_new_line,always_specify_types,annotate_overrides,avoid_annotating_with_dynamic,avoid_as,avoid_catches_without_on_clauses,avoid_returning_this,lines_longer_than_80_chars,omit_local_variable_types,prefer_expression_function_bodies,sort_constructors_first,test_types_in_equals,unnecessary_const,unnecessary_new
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
+      'deckSize': instance.deckSize,
+      'numCards': instance.numCards,
+      'bestOf': instance.bestOf,
+      'shuffling': instance.shuffling,
+      'mulliganType': instance.mulliganType,
+      'week': instance.week,
+      'type': instance.type
+    };

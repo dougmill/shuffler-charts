@@ -2,6 +2,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:built_value/standard_json_plugin.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:shuffler_charts/src/parameters/parameters.dart';
 
 part 'data.g.dart';
@@ -15,40 +16,35 @@ part 'data.g.dart';
 Serializers dataSerializers =
     (_$dataSerializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();
 
-abstract class Group {
+@JsonSerializable(createFactory: false)
+abstract class Group implements Built<Group, GroupBuilder> {
+  static Serializer<Group> get serializer => _$groupSerializer;
+
   int get deckSize;
   int get numCards;
   int get bestOf;
   Shuffling get shuffling;
+  MulliganType get mulliganType;
   int get week;
   StatsType get type;
+
+  @JsonKey(ignore: true)
+  @memoized
+  BuiltMap<String, dynamic> get asMap => BuiltMap(_$GroupToJson(this));
+
+  Group._();
+  factory Group([void Function(GroupBuilder) updates]) = _$Group;
 }
 
-abstract class LandsGroup implements Group, Built<LandsGroup, LandsGroupBuilder> {
-  static Serializer<LandsGroup> get serializer => _$landsGroupSerializer;
-  int get landsInDeck;
-  int get numCards => landsInDeck;
-
-  LandsGroup._();
-  factory LandsGroup([void Function(LandsGroupBuilder) updates]) = _$LandsGroup;
-}
-
-abstract class CardsGroup implements Group, Built<CardsGroup, CardsGroupBuilder> {
-  static Serializer<CardsGroup> get serializer => _$cardsGroupSerializer;
-
-  CardsGroup._();
-  factory CardsGroup([void Function(CardsGroupBuilder) updates]) = _$CardsGroup;
-}
-
-abstract class DataEntry<G extends Group, D extends BuiltList<dynamic>> {
-  G get group;
+abstract class DataEntry<D extends BuiltList<dynamic>> {
+  Group get group;
   D get data;
   BuiltList<String> get indexNames;
 }
 
 abstract class LandsInHandEntry
     implements
-        DataEntry<LandsGroup, BuiltList<BuiltList<int>>>,
+        DataEntry<BuiltList<BuiltList<num>>>,
         Built<LandsInHandEntry, LandsInHandEntryBuilder> {
   static Serializer<LandsInHandEntry> get serializer =>
       _$landsInHandEntrySerializer;
@@ -65,7 +61,7 @@ abstract class LandsInHandEntry
 
 abstract class LandsInLibraryEntry
     implements
-        DataEntry<LandsGroup, BuiltList<BuiltList<BuiltList<BuiltList<int>>>>>,
+        DataEntry<BuiltList<BuiltList<BuiltList<BuiltList<num>>>>>,
         Built<LandsInLibraryEntry, LandsInLibraryEntryBuilder> {
   static Serializer<LandsInLibraryEntry> get serializer =>
       _$landsInLibraryEntrySerializer;
@@ -83,7 +79,7 @@ abstract class LandsInLibraryEntry
 
 abstract class CardsByPositionEntry
     implements
-        DataEntry<CardsGroup, BuiltList<BuiltList<BuiltList<int>>>>,
+        DataEntry<BuiltList<BuiltList<BuiltList<num>>>>,
         Built<CardsByPositionEntry, CardsByPositionEntryBuilder> {
   static Serializer<CardsByPositionEntry> get serializer =>
       _$cardsByPositionEntrySerializer;
@@ -101,7 +97,7 @@ abstract class CardsByPositionEntry
 
 abstract class CardsByCountEntry
     implements
-        DataEntry<CardsGroup, BuiltList<BuiltList<int>>>,
+        DataEntry<BuiltList<BuiltList<num>>>,
         Built<CardsByCountEntry, CardsByCountEntryBuilder> {
   static Serializer<CardsByCountEntry> get serializer =>
       _$cardsByCountEntrySerializer;
