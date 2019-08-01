@@ -6,321 +6,186 @@ part of 'data_service.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MapData<K, V extends Data<dynamic>> extends MapData<K, V> {
-  @override
-  final String parameter;
-  @override
-  final BuiltMap<K, V> data;
+const LoadingStage _$fetching = const LoadingStage._('fetching');
+const LoadingStage _$parsing = const LoadingStage._('parsing');
+const LoadingStage _$processing = const LoadingStage._('processing');
+const LoadingStage _$aggregating = const LoadingStage._('aggregating');
+const LoadingStage _$loaded = const LoadingStage._('loaded');
 
-  factory _$MapData([void Function(MapDataBuilder<K, V>) updates]) =>
-      (new MapDataBuilder<K, V>()..update(updates)).build();
+LoadingStage _$loadingValueOf(String name) {
+  switch (name) {
+    case 'fetching':
+      return _$fetching;
+    case 'parsing':
+      return _$parsing;
+    case 'processing':
+      return _$processing;
+    case 'aggregating':
+      return _$aggregating;
+    case 'loaded':
+      return _$loaded;
+    default:
+      throw new ArgumentError(name);
+  }
+}
 
-  _$MapData._({this.parameter, this.data}) : super._() {
-    if (parameter == null) {
-      throw new BuiltValueNullFieldError('MapData', 'parameter');
-    }
-    if (data == null) {
-      throw new BuiltValueNullFieldError('MapData', 'data');
-    }
-    if (K == dynamic) {
-      throw new BuiltValueMissingGenericsError('MapData', 'K');
-    }
-    if (V == dynamic) {
-      throw new BuiltValueMissingGenericsError('MapData', 'V');
+final BuiltSet<LoadingStage> _$loadingValues =
+    new BuiltSet<LoadingStage>(const <LoadingStage>[
+  _$fetching,
+  _$parsing,
+  _$processing,
+  _$aggregating,
+  _$loaded,
+]);
+
+class _$LoadingState extends LoadingState {
+  @override
+  final LoadingStage stage;
+  @override
+  final double progress;
+  @override
+  final BuiltList<DataEntry<BuiltList>> data;
+  @override
+  final BuiltMap<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>>
+      lineStats;
+  @override
+  final BuiltMap<DisplayOption, BuiltMap<Object, Point<num>>> scatterStats;
+
+  factory _$LoadingState([void Function(LoadingStateBuilder) updates]) =>
+      (new LoadingStateBuilder()..update(updates)).build();
+
+  _$LoadingState._(
+      {this.stage, this.progress, this.data, this.lineStats, this.scatterStats})
+      : super._() {
+    if (stage == null) {
+      throw new BuiltValueNullFieldError('LoadingState', 'stage');
     }
   }
 
   @override
-  MapData<K, V> rebuild(void Function(MapDataBuilder<K, V>) updates) =>
+  LoadingState rebuild(void Function(LoadingStateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  MapDataBuilder<K, V> toBuilder() => new MapDataBuilder<K, V>()..replace(this);
+  LoadingStateBuilder toBuilder() => new LoadingStateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MapData &&
-        parameter == other.parameter &&
-        data == other.data;
+    return other is LoadingState &&
+        stage == other.stage &&
+        progress == other.progress &&
+        data == other.data &&
+        lineStats == other.lineStats &&
+        scatterStats == other.scatterStats;
   }
 
   @override
   int get hashCode {
-    return $jf($jc($jc(0, parameter.hashCode), data.hashCode));
+    return $jf($jc(
+        $jc($jc($jc($jc(0, stage.hashCode), progress.hashCode), data.hashCode),
+            lineStats.hashCode),
+        scatterStats.hashCode));
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper('MapData')
-          ..add('parameter', parameter)
-          ..add('data', data))
+    return (newBuiltValueToStringHelper('LoadingState')
+          ..add('stage', stage)
+          ..add('progress', progress)
+          ..add('data', data)
+          ..add('lineStats', lineStats)
+          ..add('scatterStats', scatterStats))
         .toString();
   }
 }
 
-class MapDataBuilder<K, V extends Data<dynamic>>
-    implements Builder<MapData<K, V>, MapDataBuilder<K, V>> {
-  _$MapData<K, V> _$v;
+class LoadingStateBuilder
+    implements Builder<LoadingState, LoadingStateBuilder> {
+  _$LoadingState _$v;
 
-  String _parameter;
-  String get parameter => _$this._parameter;
-  set parameter(String parameter) => _$this._parameter = parameter;
+  LoadingStage _stage;
+  LoadingStage get stage => _$this._stage;
+  set stage(LoadingStage stage) => _$this._stage = stage;
 
-  MapBuilder<K, V> _data;
-  MapBuilder<K, V> get data => _$this._data ??= new MapBuilder<K, V>();
-  set data(MapBuilder<K, V> data) => _$this._data = data;
+  double _progress;
+  double get progress => _$this._progress;
+  set progress(double progress) => _$this._progress = progress;
 
-  MapDataBuilder();
+  ListBuilder<DataEntry<BuiltList>> _data;
+  ListBuilder<DataEntry<BuiltList>> get data =>
+      _$this._data ??= new ListBuilder<DataEntry<BuiltList>>();
+  set data(ListBuilder<DataEntry<BuiltList>> data) => _$this._data = data;
 
-  MapDataBuilder<K, V> get _$this {
+  MapBuilder<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>> _lineStats;
+  MapBuilder<DisplayOption,
+      BuiltMap<Object, BuiltMap<Object, num>>> get lineStats => _$this
+          ._lineStats ??=
+      new MapBuilder<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>>();
+  set lineStats(
+          MapBuilder<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>>
+              lineStats) =>
+      _$this._lineStats = lineStats;
+
+  MapBuilder<DisplayOption, BuiltMap<Object, Point<num>>> _scatterStats;
+  MapBuilder<DisplayOption, BuiltMap<Object, Point<num>>> get scatterStats =>
+      _$this._scatterStats ??=
+          new MapBuilder<DisplayOption, BuiltMap<Object, Point<num>>>();
+  set scatterStats(
+          MapBuilder<DisplayOption, BuiltMap<Object, Point<num>>>
+              scatterStats) =>
+      _$this._scatterStats = scatterStats;
+
+  LoadingStateBuilder();
+
+  LoadingStateBuilder get _$this {
     if (_$v != null) {
-      _parameter = _$v.parameter;
+      _stage = _$v.stage;
+      _progress = _$v.progress;
       _data = _$v.data?.toBuilder();
+      _lineStats = _$v.lineStats?.toBuilder();
+      _scatterStats = _$v.scatterStats?.toBuilder();
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(MapData<K, V> other) {
+  void replace(LoadingState other) {
     if (other == null) {
       throw new ArgumentError.notNull('other');
     }
-    _$v = other as _$MapData<K, V>;
+    _$v = other as _$LoadingState;
   }
 
   @override
-  void update(void Function(MapDataBuilder<K, V>) updates) {
+  void update(void Function(LoadingStateBuilder) updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  _$MapData<K, V> build() {
-    _$MapData<K, V> _$result;
+  _$LoadingState build() {
+    _$LoadingState _$result;
     try {
       _$result = _$v ??
-          new _$MapData<K, V>._(parameter: parameter, data: data.build());
+          new _$LoadingState._(
+              stage: stage,
+              progress: progress,
+              data: _data?.build(),
+              lineStats: _lineStats?.build(),
+              scatterStats: _scatterStats?.build());
     } catch (_) {
       String _$failedField;
       try {
         _$failedField = 'data';
-        data.build();
+        _data?.build();
+        _$failedField = 'lineStats';
+        _lineStats?.build();
+        _$failedField = 'scatterStats';
+        _scatterStats?.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            'MapData', _$failedField, e.toString());
-      }
-      rethrow;
-    }
-    replace(_$result);
-    return _$result;
-  }
-}
-
-class _$ListData<T extends Data<dynamic>> extends ListData<T> {
-  @override
-  final String parameter;
-  @override
-  final BuiltList<T> data;
-
-  factory _$ListData([void Function(ListDataBuilder<T>) updates]) =>
-      (new ListDataBuilder<T>()..update(updates)).build();
-
-  _$ListData._({this.parameter, this.data}) : super._() {
-    if (parameter == null) {
-      throw new BuiltValueNullFieldError('ListData', 'parameter');
-    }
-    if (data == null) {
-      throw new BuiltValueNullFieldError('ListData', 'data');
-    }
-    if (T == dynamic) {
-      throw new BuiltValueMissingGenericsError('ListData', 'T');
-    }
-  }
-
-  @override
-  ListData<T> rebuild(void Function(ListDataBuilder<T>) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  ListDataBuilder<T> toBuilder() => new ListDataBuilder<T>()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is ListData &&
-        parameter == other.parameter &&
-        data == other.data;
-  }
-
-  @override
-  int get hashCode {
-    return $jf($jc($jc(0, parameter.hashCode), data.hashCode));
-  }
-
-  @override
-  String toString() {
-    return (newBuiltValueToStringHelper('ListData')
-          ..add('parameter', parameter)
-          ..add('data', data))
-        .toString();
-  }
-}
-
-class ListDataBuilder<T extends Data<dynamic>>
-    implements Builder<ListData<T>, ListDataBuilder<T>> {
-  _$ListData<T> _$v;
-
-  String _parameter;
-  String get parameter => _$this._parameter;
-  set parameter(String parameter) => _$this._parameter = parameter;
-
-  ListBuilder<T> _data;
-  ListBuilder<T> get data => _$this._data ??= new ListBuilder<T>();
-  set data(ListBuilder<T> data) => _$this._data = data;
-
-  ListDataBuilder();
-
-  ListDataBuilder<T> get _$this {
-    if (_$v != null) {
-      _parameter = _$v.parameter;
-      _data = _$v.data?.toBuilder();
-      _$v = null;
-    }
-    return this;
-  }
-
-  @override
-  void replace(ListData<T> other) {
-    if (other == null) {
-      throw new ArgumentError.notNull('other');
-    }
-    _$v = other as _$ListData<T>;
-  }
-
-  @override
-  void update(void Function(ListDataBuilder<T>) updates) {
-    if (updates != null) updates(this);
-  }
-
-  @override
-  _$ListData<T> build() {
-    _$ListData<T> _$result;
-    try {
-      _$result =
-          _$v ?? new _$ListData<T>._(parameter: parameter, data: data.build());
-    } catch (_) {
-      String _$failedField;
-      try {
-        _$failedField = 'data';
-        data.build();
-      } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            'ListData', _$failedField, e.toString());
-      }
-      rethrow;
-    }
-    replace(_$result);
-    return _$result;
-  }
-}
-
-class _$CountsData extends CountsData {
-  @override
-  final String parameter;
-  @override
-  final BuiltList<int> data;
-
-  factory _$CountsData([void Function(CountsDataBuilder) updates]) =>
-      (new CountsDataBuilder()..update(updates)).build();
-
-  _$CountsData._({this.parameter, this.data}) : super._() {
-    if (parameter == null) {
-      throw new BuiltValueNullFieldError('CountsData', 'parameter');
-    }
-    if (data == null) {
-      throw new BuiltValueNullFieldError('CountsData', 'data');
-    }
-  }
-
-  @override
-  CountsData rebuild(void Function(CountsDataBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  CountsDataBuilder toBuilder() => new CountsDataBuilder()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is CountsData &&
-        parameter == other.parameter &&
-        data == other.data;
-  }
-
-  @override
-  int get hashCode {
-    return $jf($jc($jc(0, parameter.hashCode), data.hashCode));
-  }
-
-  @override
-  String toString() {
-    return (newBuiltValueToStringHelper('CountsData')
-          ..add('parameter', parameter)
-          ..add('data', data))
-        .toString();
-  }
-}
-
-class CountsDataBuilder implements Builder<CountsData, CountsDataBuilder> {
-  _$CountsData _$v;
-
-  String _parameter;
-  String get parameter => _$this._parameter;
-  set parameter(String parameter) => _$this._parameter = parameter;
-
-  ListBuilder<int> _data;
-  ListBuilder<int> get data => _$this._data ??= new ListBuilder<int>();
-  set data(ListBuilder<int> data) => _$this._data = data;
-
-  CountsDataBuilder();
-
-  CountsDataBuilder get _$this {
-    if (_$v != null) {
-      _parameter = _$v.parameter;
-      _data = _$v.data?.toBuilder();
-      _$v = null;
-    }
-    return this;
-  }
-
-  @override
-  void replace(CountsData other) {
-    if (other == null) {
-      throw new ArgumentError.notNull('other');
-    }
-    _$v = other as _$CountsData;
-  }
-
-  @override
-  void update(void Function(CountsDataBuilder) updates) {
-    if (updates != null) updates(this);
-  }
-
-  @override
-  _$CountsData build() {
-    _$CountsData _$result;
-    try {
-      _$result =
-          _$v ?? new _$CountsData._(parameter: parameter, data: data.build());
-    } catch (_) {
-      String _$failedField;
-      try {
-        _$failedField = 'data';
-        data.build();
-      } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            'CountsData', _$failedField, e.toString());
+            'LoadingState', _$failedField, e.toString());
       }
       rethrow;
     }

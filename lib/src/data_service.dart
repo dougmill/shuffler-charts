@@ -1,152 +1,260 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
-import 'package:angular/core.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 import 'package:http/http.dart' as http;
 import 'package:rxdart/rxdart.dart';
+import 'package:shuffler_charts/src/data/predictions.dart';
+import 'package:shuffler_charts/src/parameters/parameters.dart';
+
+import 'data/data.dart';
 
 part 'data_service.g.dart';
 
 /// Service that handles fetching, combining, and caching data from the server.
-class DataService implements OnInit {
-  // numCards => [mulligans][position][numDrawn] = count of games
-  final totalCounts = Map<int, List<List<List<int>>>>();
-  final perWeekCounts = List<Map<int, List<List<List<int>>>>>();
+class DataService {
+  final _dataCache = Map<FetchParameters, ValueObservable<LoadingState>>();
+  final _statsCache = Map<Parameters, ValueObservable<LoadingState>>();
 
-  final _status = BehaviorSubject<String>.seeded('Fetching');
+  ValueObservable<LoadingState> loadStats(Parameters params) {
+    return _statsCache[params] ??= _fromStream(_loadStats(params));
+  }
 
-  Stream<String> get status => _status.stream;
+  ValueObservable<T> _fromStream<T>(Stream<T> stream) {
+    var obs = BehaviorSubject<T>();
+    return obs..addStream(stream).then((_) => obs.close());
+  }
 
-  final _loaded = BehaviorSubject<bool>.seeded(false);
+  Stream<LoadingState> _loadStats(Parameters params) async* {
+    var fetchParams = FetchParameters.from(params);
+    var dataStream =
+        _dataCache[fetchParams] ??= _fromStream(_fetchData(fetchParams));
+    yield* dataStream;
+    yield* _aggregate(dataStream.value.data, params);
+  }
 
-  ValueObservable<bool> get loaded => _loaded.stream;
+  Stream<LoadingState> _fetchData(FetchParameters params) async* {
+    String url = 'https://mtgatool.com/shuffler_test/fetch.php?$params';
+    Future<String> request = http.read(url);
+    yield LoadingState((b) => b.stage = LoadingStage.fetching);
+    String rawData = await request;
 
-  @override
-  Future<void> ngOnInit() async {
-    String url =
-        'https://mtgatool.com/shuffler_test/fetch.php?stats_type=positions';
-    try {
-      String body = await http.read(url);
-      _status.add('Parsing');
-      List<dynamic> parsed = json.decode(body);
-      _status.add('Processing: 0%');
-      parsed.sort((a, b) => a['group']['week'].compareTo(b['group']['week']));
-      Map<int, List<List<List<int>>>> week;
-      for (int i = 0; i < parsed.length; i++) {
-        dynamic entry = parsed[i];
-        if (entry.group.week >= perWeekCounts.length) {
-          week = Map();
-          perWeekCounts.add(week);
+    yield LoadingState((b) => b.stage = LoadingStage.parsing);
+    const entryTypes = {
+      StatsType.handLands: FullType(LandsInHandEntry),
+      StatsType.libraryLands: FullType(LandsInLibraryEntry),
+      StatsType.cardPositions: FullType(CardsByPositionEntry),
+      StatsType.cardCopies: FullType(CardsByCountEntry)
+    };
+    List<Object> json = jsonDecode(rawData);
+
+    var dataBuilder = ListBuilder<DataEntry>();
+    for (int i = 0; i < json.length; i++) {
+      yield LoadingState((b) => b
+        ..stage = LoadingStage.processing
+        ..progress = i / json.length);
+      dataBuilder.add(dataSerializers.deserialize(json,
+          specifiedType: entryTypes[params.type]));
+    }
+    yield LoadingState((b) => b
+      ..stage = LoadingStage.processing
+      ..progress = 1
+      ..data = dataBuilder);
+  }
+
+  Stream<LoadingState> _aggregate(
+      BuiltList<DataEntry> data, Parameters params) async* {
+    var paramValuesMap = params.asMap.map((k, v) {
+      if (v.type == ParameterType.selection) {
+        return MapEntry(k, BuiltSet<Object>.of([v.value]));
+      } else {
+        return MapEntry(
+            k, BuiltSet<Object>.of(v.options.where((o) => o.selected)));
+      }
+    });
+
+    var options = BuiltMap<DisplayOption, bool>.build(
+        (b) => params.options.options.forEach((o) => b[o.value] = o.selected));
+    var statsBuilder = Map<DisplayOption, Map<Object, Map<Object, num>>>();
+
+    entry:
+    for (int i = 0; i < data.length; i++) {
+      yield LoadingState((b) => b
+        ..stage = LoadingStage.aggregating
+        ..progress = i / data.length);
+
+      var entry = data[i];
+      var group = entry.group;
+      Object breakdownKey = '';
+      Object xKey = '';
+      var inputsForExpected = HypergeometricInputsBuilder()
+        ..population = group.deckSize
+        ..hits = group.numCards;
+      var inputsForBugged = BuggedInputsBuilder()
+        ..population = group.deckSize
+        ..hits = group.numCards;
+
+      void maybeSetKey(String name, Object value) {
+        if (name == params.breakdownBy.value) {
+          breakdownKey = value;
+        } else if (name == params.xAxis.value) {
+          xKey = value;
         }
-        int numCards = entry['group']['numCards'] ?? 0;
-        week[numCards] = entry['distribution'];
-        List<List<List<int>>> totals =
-            totalCounts.putIfAbsent(numCards, () => List());
-        if (!totalCounts.containsKey(numCards)) {
-          await (_combine(totals, entry['distribution'], i / parsed.length,
-              1 / parsed.length));
+        switch (name) {
+          case 'mulligans':
+            int handSize =
+                group.mulliganType == MulliganType.london ? 7 : 7 - value;
+            if (group.type != StatsType.libraryLands) {
+              inputsForExpected.sample = handSize;
+            } else {
+              inputsForExpected.population = group.deckSize - handSize;
+            }
+            inputsForBugged.mulligans = value;
+            inputsForBugged.sample = handSize;
+            break;
+          case 'decklistPosition':
+            inputsForBugged.position = value;
+            break;
+          case 'landsInHand':
+            inputsForExpected.hits = group.numCards - value;
+            break;
+          case 'libraryPosition':
+            inputsForExpected.sample = 1 + value;
+            break;
         }
       }
-      _status.add('Processing complete');
-      _loaded.add(true);
-    } on http.ClientException catch (ex) {
-      _status.add('Error fetching data: ${ex.message}');
-    } catch (ex) {
-      _status.add('Error parsing or processing data: $ex');
-    }
-  }
 
-  Future<void> _combine(List<dynamic> dest, List<dynamic> toAdd, double base,
-      double portion) async {
-    double newBase = base;
-    double newPortion = portion / dest.length;
-    Function combiner = toAdd[0] is List
-        ? (i) async => await _combine(dest[i], toAdd[i], newBase, newPortion)
-        : (i) async => dest[i] + toAdd[i];
-    for (int i = 0; i < dest.length; i++) {
-      await combiner(i);
-      newBase += newPortion;
-      String newStatus = 'Processing: ${(newBase * 100).round()}%';
-      if (_status.value != newStatus) {
-        _status.add(newStatus);
+      void addToStat(DisplayOption option, num n) {
+        var breakdownBuilder =
+            statsBuilder[option] ??= Map<Object, Map<Object, num>>();
+        var xBuilder = breakdownBuilder[breakdownKey] ??= Map<Object, num>();
+        xBuilder[xKey] ??= 0;
+        xBuilder[xKey] += n;
       }
-    }
-  }
-}
 
-Future<MapData<dynamic, dynamic>> parseEntries(StreamController<double> progressReporter,
-    List<dynamic> json,
-    BuiltList<String> groupKeys, BuiltList<String> indexNames) async {
-//  var result =
-  for (int i = 0; i < json.length; i++) {
-   // MapDataBuilder<dynamic, dynamic> branch = result;
-    Map<String, dynamic> entry = json[i];
-    Map<String, dynamic> group = entry['group'];
-    for (var key in groupKeys) {
-     // branch = branch.data[group[key]] ?? branch.data = MapD
-    }
-  }
-}
-
-Future<Data<dynamic>> parseArrays(StreamController<double> progressReporter,
-    List<dynamic> input,
-    BuiltList<String> indexNames, int currentLevel) async {
-  if (currentLevel == indexNames.length - 1) {
-    var retVal = CountsData((b) =>
-    b..parameter = indexNames.last
-      ..data = ListBuilder(input));
-    progressReporter.add(1);
-    return retVal;
-  } else {
-    var builder = ListDataBuilder<Data<dynamic>>()..parameter = indexNames[currentLevel];
-    for (int i = 0; i < input.length; i++) {
-      var subProgress = StreamController<double>();
-      Future<Data<dynamic>> subVal = parseArrays(subProgress, input[i], indexNames, currentLevel + 1);
-      await for (double sub in subProgress.stream) {
-        progressReporter.add((i + sub) / input.length);
+      for (var field in group.asMap.entries) {
+        if (!paramValuesMap[field.key].contains(field.value)) {
+          continue entry;
+        }
+        maybeSetKey(field.key, field.value);
       }
-      builder.data.add(await subVal);
+
+      void processLists(BuiltList<Object> list, int currentDepth) {
+        String indexName = entry.indexNames[currentDepth];
+        if (list is BuiltList<num>) {
+          var sampleSize = list.reduce((a, b) => a + b);
+          var expectedDistribution = options[DisplayOption.expected]
+              ? hypergeometric(inputsForExpected.build())
+              : const <double>[];
+          var buggedDistribution = options[DisplayOption.bugged]
+              ? bugged(inputsForBugged.build())
+              : const <double>[];
+          if (options[DisplayOption.sampleSize] ||
+              !options[DisplayOption.count]) {
+            addToStat(DisplayOption.sampleSize, sampleSize);
+          }
+          for (int i = 0; i < list.length; i++) {
+            maybeSetKey(indexName, i);
+            if (!paramValuesMap[indexName].contains(i)) {
+              continue;
+            }
+            if (options[DisplayOption.actual]) {
+              addToStat(DisplayOption.actual, list[i]);
+            }
+            if (options[DisplayOption.expected]) {
+              addToStat(
+                  DisplayOption.actual, expectedDistribution[i] * sampleSize);
+            }
+            if (options[DisplayOption.bugged]) {
+              addToStat(
+                  DisplayOption.bugged, buggedDistribution[i] * sampleSize);
+            }
+          }
+        } else {
+          for (int selected in paramValuesMap[indexName]) {
+            maybeSetKey(indexName, selected);
+            processLists(list[selected], currentDepth + 1);
+          }
+        }
+      }
+
+      processLists(entry.data, 0);
     }
-    return builder.build();
+
+    yield LoadingState((b) => b
+      ..stage = LoadingStage.aggregating
+      ..progress = 1);
+
+    if (!options[DisplayOption.count]) {
+      var sampleSizes = statsBuilder[DisplayOption.sampleSize];
+      statsBuilder.forEach((displayOption, breakdownBuilder) =>
+          breakdownBuilder.forEach((breakdown, xBuilder) => xBuilder
+              .updateAll((x, count) => count / sampleSizes[breakdown][x])));
+    }
+
+    if (params.xAxis.value is DisplayOption) {
+      var xVals = statsBuilder[params.xAxis.value];
+      var scatterStatsBuilder =
+          MapBuilder<DisplayOption, BuiltMap<Object, Point<num>>>();
+      statsBuilder.forEach((displayOption, breakdownMap) {
+        var breakdownBuilder = MapBuilder<Object, Point<num>>();
+        breakdownMap.forEach((breakdown, yMap) => breakdownBuilder[breakdown] =
+            Point(xVals[breakdown][''], yMap['']));
+        scatterStatsBuilder[displayOption] = breakdownBuilder.build();
+      });
+
+      yield LoadingState((b) => b
+        ..stage = LoadingStage.loaded
+        ..scatterStats = scatterStatsBuilder);
+    } else {
+      var lineStatsBuilder =
+          MapBuilder<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>>();
+      statsBuilder.forEach((displayOption, breakdownMap) {
+        if (options[displayOption]) {
+          var breakdownBuilder = MapBuilder<Object, BuiltMap<Object, num>>();
+          breakdownMap.forEach((breakdown, xMap) =>
+          breakdownBuilder[breakdown] = BuiltMap<Object, num>.of(xMap));
+          lineStatsBuilder[displayOption] = breakdownBuilder.build();
+        }
+      });
+
+      yield LoadingState((b) => b
+        ..stage = LoadingStage.loaded
+        ..lineStats = lineStatsBuilder);
+    }
   }
 }
 
-/*
-Problems:
-1. Must know generic type (can't be dynamic) at object creation.
-2. Automatic conversion between built and builder in nested fields does not
-carry through generic fields, and in particular doesn't work for the contents of
-BuiltList and BuiltMap.
-3. I can't work around problem 2 by generating non-generic list/map classes with
-built_value, or even by using BuiltList/Map with hard coded types.
- */
+class LoadingStage extends EnumClass {
+  static const LoadingStage fetching = _$fetching;
+  static const LoadingStage parsing = _$parsing;
+  static const LoadingStage processing = _$processing;
+  static const LoadingStage aggregating = _$aggregating;
+  static const LoadingStage loaded = _$loaded;
 
-abstract class Data<T> {
-  String get parameter;
+  const LoadingStage._(String name) : super(name);
 
-  T get data;
+  static BuiltSet<LoadingStage> get values => _$loadingValues;
+  static LoadingStage valueOf(String name) => _$loadingValueOf(name);
 }
 
-abstract class MapData<K, V extends Data<dynamic>>
-    implements Data<BuiltMap<K, V>>, Built<MapData<K, V>, MapDataBuilder<K, V>> {
-  MapData._();
+abstract class LoadingState
+    implements Built<LoadingState, LoadingStateBuilder> {
+  LoadingStage get stage;
+  @nullable
+  double get progress;
+  @nullable
+  BuiltList<DataEntry> get data;
+  @nullable
+  BuiltMap<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>>
+      get lineStats;
+  @nullable
+  BuiltMap<DisplayOption, BuiltMap<Object, Point<num>>> get scatterStats;
 
-  factory MapData([void Function(MapDataBuilder<K, V>) updates]) =
-      _$MapData<K, V>;
-}
-
-abstract class ListData<T extends Data<dynamic>>
-    implements Data<BuiltList<T>>, Built<ListData<T>, ListDataBuilder<T>> {
-  ListData._();
-
-  factory ListData([void Function(ListDataBuilder<T>) updates]) = _$ListData<T>;
-}
-
-abstract class CountsData
-    implements Data<BuiltList<int>>, Built<CountsData, CountsDataBuilder> {
-  CountsData._();
-
-  factory CountsData([void Function(CountsDataBuilder) updates]) = _$CountsData;
+  LoadingState._();
+  factory LoadingState([void Function(LoadingStateBuilder) updates]) =
+      _$LoadingState;
 }
