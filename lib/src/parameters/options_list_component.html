@@ -1,0 +1,4 @@
+<label *ngFor="let option of optionBuilders; trackBy: trackByLabel">
+  <input type="checkbox" [(ngModel)]="option.selected">
+  {{ option.label }}
+</label>
