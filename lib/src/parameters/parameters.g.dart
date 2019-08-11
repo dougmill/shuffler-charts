@@ -700,18 +700,16 @@ class ParameterBuilder<T>
     onSet();
   }
 
-  ListBuilder<Option<BuiltSet<T>>> _multiSelections;
-  ListBuilder<Option<BuiltSet<T>>> get multiSelections =>
-      _$this._multiSelections ??= new ListBuilder<Option<BuiltSet<T>>>();
-  set multiSelections(ListBuilder<Option<BuiltSet<T>>> multiSelections) {
+  BuiltList<Option<BuiltSet<T>>> _multiSelections;
+  BuiltList<Option<BuiltSet<T>>> get multiSelections => _$this._multiSelections;
+  set multiSelections(BuiltList<Option<BuiltSet<T>>> multiSelections) {
     _$this._multiSelections = multiSelections;
     onSet();
   }
 
-  ListBuilder<Option<T>> _options;
-  ListBuilder<Option<T>> get options =>
-      _$this._options ??= new ListBuilder<Option<T>>();
-  set options(ListBuilder<Option<T>> options) {
+  BuiltList<Option<T>> _options;
+  BuiltList<Option<T>> get options => _$this._options;
+  set options(BuiltList<Option<T>> options) {
     _$this._options = options;
     onSet();
   }
@@ -730,8 +728,8 @@ class ParameterBuilder<T>
       _type = _$v.type;
       _name = _$v.name;
       _value = _$v.value;
-      _multiSelections = _$v.multiSelections?.toBuilder();
-      _options = _$v.options?.toBuilder();
+      _multiSelections = _$v.multiSelections;
+      _options = _$v.options;
       _error = _$v.error;
       _$v = null;
     }
@@ -753,29 +751,14 @@ class ParameterBuilder<T>
 
   @override
   _$Parameter<T> build() {
-    _$Parameter<T> _$result;
-    try {
-      _$result = _$v ??
-          new _$Parameter<T>._(
-              type: type,
-              name: name,
-              value: value,
-              multiSelections: multiSelections.build(),
-              options: options.build(),
-              error: error);
-    } catch (_) {
-      String _$failedField;
-      try {
-        _$failedField = 'multiSelections';
-        multiSelections.build();
-        _$failedField = 'options';
-        options.build();
-      } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            'Parameter', _$failedField, e.toString());
-      }
-      rethrow;
-    }
+    final _$result = _$v ??
+        new _$Parameter<T>._(
+            type: type,
+            name: name,
+            value: value,
+            multiSelections: multiSelections,
+            options: options,
+            error: error);
     replace(_$result);
     return _$result;
   }
@@ -842,17 +825,28 @@ class _$Option<T> extends Option<T> {
 class OptionBuilder<T> implements Builder<Option<T>, OptionBuilder<T>> {
   _$Option<T> _$v;
 
+  void Function() onSet = () {};
+
   T _value;
   T get value => _$this._value;
-  set value(T value) => _$this._value = value;
+  set value(T value) {
+    _$this._value = value;
+    onSet();
+  }
 
   String _label;
   String get label => _$this._label;
-  set label(String label) => _$this._label = label;
+  set label(String label) {
+    _$this._label = label;
+    onSet();
+  }
 
   bool _selected;
   bool get selected => _$this._selected;
-  set selected(bool selected) => _$this._selected = selected;
+  set selected(bool selected) {
+    _$this._selected = selected;
+    onSet();
+  }
 
   OptionBuilder();
 

@@ -121,11 +121,31 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
 
   Parameters._();
   factory Parameters([void Function(ParametersBuilder) updates]) = _$Parameters;
+
+  // I'd really prefer this generated, but it seems I'd have to implement the
+  // generation myself.
+  factory Parameters.fromMap(Map<String, Parameter<dynamic>> map) =>
+      _$Parameters._(
+          type: map['type'],
+          xAxis: map['xAxis'],
+          breakdownBy: map['breakdownBy'],
+          options: map['options'],
+          deckSize: map['deckSize'],
+          numCards: map['numCards'],
+          bestOf: map['bestOf'],
+          shuffling: map['shuffling'],
+          mulliganType: map['mulliganType'],
+          mulligans: map['mulligans'],
+          numDrawn: map['numDrawn'],
+          landsInHand: map['landsInHand'],
+          libraryPosition: map['libraryPosition'],
+          decklistPosition: map['decklistPosition'],
+          weeks: map['weeks']);
 }
 
 enum ParameterType { selection, toggles }
 
-@BuiltValue(generateBuilderOnSetField: true)
+@BuiltValue(generateBuilderOnSetField: true, nestedBuilders: false)
 @JsonSerializable()
 abstract class Parameter<T>
     implements Built<Parameter<T>, ParameterBuilder<T>> {
@@ -143,6 +163,7 @@ abstract class Parameter<T>
       _$Parameter<T>;
 }
 
+@BuiltValue(generateBuilderOnSetField: true, nestedBuilders: false)
 abstract class Option<T> implements Built<Option<T>, OptionBuilder<T>> {
   T get value;
   String get label;
@@ -237,7 +258,7 @@ void initialize(ParametersBuilder b, int maxWeek) {
     ..type = ParameterType.selection
     ..name = 'Chart type'
     ..value = StatsType.cardPositions
-    ..options = ListBuilder([
+    ..options = BuiltList([
       Option.of(StatsType.handLands, 'Lands in opening hand'),
       Option.of(StatsType.libraryLands, 'Lands in library'),
       Option.of(StatsType.cardPositions, 'Cards by position in decklist'),
@@ -257,7 +278,7 @@ void initialize(ParametersBuilder b, int maxWeek) {
   b.options = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Display options'
-    ..options = ListBuilder([
+    ..options = BuiltList([
       Option.of(DisplayOption.actual, 'Show actual values', true),
       Option.of(DisplayOption.expected, 'Show expected values', true),
       Option.of(DisplayOption.bugged, 'Show prediction for bug', true),
@@ -268,7 +289,7 @@ void initialize(ParametersBuilder b, int maxWeek) {
   b.deckSize = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Cards in deck'
-    ..options = ListBuilder([Option.of(40, '40'), Option.of(60, '60')])
+    ..options = BuiltList([Option.of(40, '40'), Option.of(60, '60')])
     ..value = 60);
 
   b.numCards = Parameter((p) => p
@@ -279,32 +300,32 @@ void initialize(ParametersBuilder b, int maxWeek) {
   b.bestOf = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Best of'
-    ..options = ListBuilder([Option.of(1, '1', false), Option.of(3, '3', true)])
-    ..multiSelections = ListBuilder([Option.all(p.options.build())]));
+    ..options = BuiltList([Option.of(1, '1', false), Option.of(3, '3', true)])
+    ..multiSelections = BuiltList([Option.all(p.options)]));
 
   b.shuffling = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Shuffling'
-    ..options = ListBuilder([
+    ..options = BuiltList([
       Option.of(Shuffling.normal, 'Normal', true),
       Option.of(Shuffling.smoothed, 'Smoothed', false)
     ])
-    ..multiSelections = ListBuilder([Option.all(p.options.build())]));
+    ..multiSelections = BuiltList([Option.all(p.options)]));
 
   b.mulliganType = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Mulligan type'
-    ..options = ListBuilder([
+    ..options = BuiltList([
       Option.of(MulliganType.vancouver, 'Vancouver', true),
       Option.of(MulliganType.london, 'London', true)
     ])
-    ..multiSelections = ListBuilder([Option.all(p.options.build())]));
+    ..multiSelections = BuiltList([Option.all(p.options)]));
 
   b.mulligans = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Mulligans'
-    ..options = ListBuilder(_range(0, 6))
-    ..multiSelections = ListBuilder([Option.all(p.options.build())]));
+    ..options = BuiltList(_range(0, 6))
+    ..multiSelections = BuiltList([Option.all(p.options)]));
 
   b.numDrawn = Parameter((p) => p
     ..type = ParameterType.toggles
@@ -327,18 +348,18 @@ void initialize(ParametersBuilder b, int maxWeek) {
   b.weeks = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Weeks'
-    ..options = ListBuilder([
+    ..options = BuiltList([
       for (int week = 0; week <= maxWeek; week++)
         Option.of(week, _weekLabel(week), true)
     ])
-    ..multiSelections = ListBuilder([
-      Option.all(p.options.build()),
-      Option.all(p.options.build().sublist(0, 2), 'Before smooth shuffling'),
-      Option.all(p.options.build().sublist(2), 'After smooth shuffling'),
-      Option.all(p.options.build().sublist(0, 16), 'Before War of the Spark'),
-      Option.all(p.options.build().sublist(16), 'After War of the Spark'),
-      Option.all(p.options.build().sublist(0, 21), 'Before M20'),
-      Option.all(p.options.build().sublist(22), 'After M20')
+    ..multiSelections = BuiltList([
+      Option.all(p.options),
+      Option.all(p.options.sublist(0, 2), 'Before smooth shuffling'),
+      Option.all(p.options.sublist(2), 'After smooth shuffling'),
+      Option.all(p.options.sublist(0, 16), 'Before War of the Spark'),
+      Option.all(p.options.sublist(16), 'After War of the Spark'),
+      Option.all(p.options.sublist(0, 21), 'Before M20'),
+      Option.all(p.options.sublist(22), 'After M20')
     ]));
 
   validate(Parameters(), b);
@@ -351,13 +372,17 @@ void validate(Parameters old, ParametersBuilder updated) {
   StatsType type = updated.type.value;
   if (old.type.value != type) {
     if (type == StatsType.cardPositions) {
-      updated.options = updated.options.rebuild((p) => p.options.insert(
-          2, Option.of(DisplayOption.bugged, 'Show prediction for bug', true)));
+      updated.options = updated.options.rebuild((p) => p.options = p.options
+          .rebuild((lo) => lo.insert(
+              2,
+              Option.of(
+                  DisplayOption.bugged, 'Show prediction for bug', true))));
     } else if (old.type.value == StatsType.cardPositions) {
-      updated.options = updated.options.rebuild((p) => p.options.removeAt(2));
+      updated.options = updated.options.rebuild(
+          (p) => p.options = p.options.rebuild((lo) => lo.removeAt(2)));
     }
 
-    updated.xAxis = updated.xAxis.rebuild((b) => b.options = ListBuilder([
+    updated.xAxis = updated.xAxis.rebuild((b) => b.options = BuiltList([
           ..._getCommonAxisOptions(type),
           Option.of(DisplayOption.actual, 'Actual values'),
           Option.of(DisplayOption.expected, 'Expected values'),
@@ -366,8 +391,7 @@ void validate(Parameters old, ParametersBuilder updated) {
           Option.of(DisplayOption.sampleSize, 'Sample sizes')
         ]));
     updated.breakdownBy = updated.breakdownBy.rebuild((p) => p.options =
-        ListBuilder(
-            [Option.of('none', 'None'), ..._getCommonAxisOptions(type)]));
+        BuiltList([Option.of('none', 'None'), ..._getCommonAxisOptions(type)]));
   }
 
   void Function(ParameterBuilder<T>) errorSetter<T>(String error) {
@@ -416,22 +440,22 @@ void validate(Parameters old, ParametersBuilder updated) {
         return;
       }
 
-      var oldSelections = BuiltMap<T, bool>(
-          {for (var o in p.options.build()) o.value: o.selected});
+      var oldSelections =
+          BuiltMap<T, bool>({for (var o in p.options) o.value: o.selected});
       p
         ..options = (options.toBuilder()
-          ..map((o) => o.rebuild(
-              (ob) => ob.selected = oldSelections[o.value] ?? o.selected)))
-        ..multiSelections = ListBuilder([
-          if (p.type == ParameterType.toggles) Option.all(p.options.build())
-        ]);
+              ..map((o) => o.rebuild(
+                  (ob) => ob.selected = oldSelections[o.value] ?? o.selected)))
+            .build()
+        ..multiSelections = BuiltList(
+            [if (p.type == ParameterType.toggles) Option.all(p.options)]);
     };
   }
 
   void Function(ParameterBuilder<T>) multiSelectionsUpdater<T>(
       Parameter<T> before) {
     return (after) {
-      if (after.multiSelections.build() != before.multiSelections) {
+      if (after.multiSelections != before.multiSelections) {
         for (int i = 0; i < after.multiSelections.length; i++) {
           if (after.multiSelections[i].selected !=
               before.multiSelections[i].selected) {
@@ -444,10 +468,9 @@ void validate(Parameters old, ParametersBuilder updated) {
           }
         }
       }
-      if (after.options.build() != before.options &&
-          after.multiSelections.isNotEmpty) {
+      if (after.options != before.options && after.multiSelections.isNotEmpty) {
         BuiltSet<T> selectedVals =
-            BuiltSet([for (var o in after.options.build()) o.value]);
+            BuiltSet([for (var o in after.options) o.value]);
         after.multiSelections.map((m) =>
             Option.of(m.value, m.label, m.value.every(selectedVals.contains)));
       }
@@ -455,7 +478,7 @@ void validate(Parameters old, ParametersBuilder updated) {
   }
 
   bool isAnyValueSelected<T>(ParameterBuilder<T> p) =>
-      p.options.build().any((o) => o.selected);
+      p.options.any((o) => o.selected);
 
   void Function(ParameterBuilder<T>) defaultErrorSetter<T>() {
     return (p) {
