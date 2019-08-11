@@ -1,0 +1,16 @@
+<header>{{ paramBuilder.name }}</header>
+
+<template [ngSwitch]="paramBuilder.type">
+  <select *ngSwitchCase="ParameterType.selection" [(ngModel)]="paramBuilder.value">
+    <option *ngFor="let option of paramBuilder.options; trackBy: trackByLabel"
+            [ngValue]="option.value">
+      {{ option.label }}
+    </option>
+  </select>
+  <template [ngSwitchCase]="ParameterType.toggles">
+    <shuffle-options-list [(options)]="paramBuilder.multiSelections"></shuffle-options-list>
+    <shuffle-options-list [(options)]="paramBuilder.options"></shuffle-options-list>
+  </template>
+</template>
+
+<footer *ngIf="paramBuilder.error != null">{{ paramBuilder.error }}</footer>
