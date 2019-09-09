@@ -37,7 +37,7 @@ class DataService {
   }
 
   Stream<LoadingState> _fetchData(FetchParameters params) async* {
-    String url = 'https://mtgatool.com/shuffler_test/fetch.php?$params';
+    String url = 'shuffler_stats.json';
     Future<String> request = http.read(url);
     yield LoadingState((b) => b.stage = LoadingStage.fetching);
     String rawData = await request;
@@ -76,8 +76,12 @@ class DataService {
       }
     });
 
-    var options = BuiltMap<DisplayOption, bool>.build(
-        (b) => params.options.options.forEach((o) => b[o.value] = o.selected));
+    var options = BuiltMap<DisplayOption, bool>.of({
+      for (var option in params.options.options)
+        option.value: option.selected,
+      if (params.xAxis.value is DisplayOption)
+        params.xAxis.value: true
+    });
     var statsBuilder = Map<DisplayOption, Map<Object, Map<Object, num>>>();
 
     entry:
@@ -234,6 +238,8 @@ class LoadingStage extends EnumClass {
   static const LoadingStage processing = _$processing;
   static const LoadingStage aggregating = _$aggregating;
   static const LoadingStage loaded = _$loaded;
+
+  String get label => '${name[0].toUpperCase()}${name.substring(1)}';
 
   const LoadingStage._(String name) : super(name);
 

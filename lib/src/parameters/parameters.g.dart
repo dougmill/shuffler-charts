@@ -34,6 +34,38 @@ final BuiltSet<StatsType> _$statsTypeValues =
   _$cardCopies,
 ]);
 
+const DisplayOption _$actual = const DisplayOption._('actual');
+const DisplayOption _$expected = const DisplayOption._('expected');
+const DisplayOption _$bugged = const DisplayOption._('bugged');
+const DisplayOption _$count = const DisplayOption._('count');
+const DisplayOption _$sampleSize = const DisplayOption._('sampleSize');
+
+DisplayOption _$displayOptionValueOf(String name) {
+  switch (name) {
+    case 'actual':
+      return _$actual;
+    case 'expected':
+      return _$expected;
+    case 'bugged':
+      return _$bugged;
+    case 'count':
+      return _$count;
+    case 'sampleSize':
+      return _$sampleSize;
+    default:
+      throw new ArgumentError(name);
+  }
+}
+
+final BuiltSet<DisplayOption> _$displayOptionValues =
+    new BuiltSet<DisplayOption>(const <DisplayOption>[
+  _$actual,
+  _$expected,
+  _$bugged,
+  _$count,
+  _$sampleSize,
+]);
+
 const Shuffling _$normal = const Shuffling._('normal');
 const Shuffling _$smoothed = const Shuffling._('smoothed');
 
@@ -263,6 +295,7 @@ class _$Parameters extends Parameters {
   @override
   final Parameter<int> weeks;
   BuiltMap<String, Parameter<dynamic>> __asMap;
+  bool __isValid;
 
   factory _$Parameters([void Function(ParametersBuilder) updates]) =>
       (new ParametersBuilder()..update(updates)).build();
@@ -333,6 +366,9 @@ class _$Parameters extends Parameters {
 
   @override
   BuiltMap<String, Parameter<dynamic>> get asMap => __asMap ??= super.asMap;
+
+  @override
+  bool get isValid => __isValid ??= super.isValid;
 
   @override
   Parameters rebuild(void Function(ParametersBuilder) updates) =>
@@ -890,6 +926,9 @@ class OptionBuilder<T> implements Builder<Option<T>, OptionBuilder<T>> {
 
 Map<String, dynamic> _$StatsTypeToJson(StatsType instance) =>
     <String, dynamic>{'name': instance.name};
+
+Map<String, dynamic> _$DisplayOptionToJson(DisplayOption instance) =>
+    <String, dynamic>{'name': instance.name, 'label': instance.label};
 
 Map<String, dynamic> _$ShufflingToJson(Shuffling instance) =>
     <String, dynamic>{'name': instance.name};

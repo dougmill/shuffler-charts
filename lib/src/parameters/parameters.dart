@@ -22,9 +22,28 @@ class StatsType extends EnumClass {
   static StatsType valueOf(String name) => _$statsTypeValueOf(name);
 }
 
-// The string names of these values are not used for anything, so EnumClass is
-// not needed.
-enum DisplayOption { actual, expected, bugged, count, sampleSize }
+@JsonSerializable(createFactory: false)
+class DisplayOption extends EnumClass {
+  static const DisplayOption actual = _$actual;
+  static const DisplayOption expected = _$expected;
+  static const DisplayOption bugged = _$bugged;
+  static const DisplayOption count = _$count;
+  static const DisplayOption sampleSize = _$sampleSize;
+
+  const DisplayOption._(String name): super(name);
+
+  static BuiltSet<DisplayOption> get values => _$displayOptionValues;
+  static DisplayOption valueOf(String name) => _$displayOptionValueOf(name);
+
+  static const _labels = {
+    actual: 'Actual value',
+    expected: 'Expected value',
+    bugged: 'Effect of bug',
+    sampleSize: 'Sample size'
+  };
+
+  String get label => _labels[this];
+}
 
 @JsonSerializable(createFactory: false)
 class Shuffling extends EnumClass {
@@ -119,6 +138,10 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
   BuiltMap<String, Parameter<dynamic>> get asMap =>
       BuiltMap(_$ParametersToJson(this));
 
+  @JsonKey(ignore: true)
+  @memoized
+  bool get isValid => asMap.values.every((p) => p.error == null);
+
   Parameters._();
   factory Parameters([void Function(ParametersBuilder) updates]) = _$Parameters;
 
@@ -188,13 +211,14 @@ abstract class Option<T> implements Built<Option<T>, OptionBuilder<T>> {
           .build();
 }
 
+const numDrawnLabels = {
+  StatsType.handLands: 'Lands drawn',
+  StatsType.libraryLands: 'Lands in library',
+  StatsType.cardPositions: 'Relevant cards drawn',
+  StatsType.cardCopies: 'Copies drawn'
+};
+
 List<Option<String>> _getCommonAxisOptions(StatsType type) {
-  const numDrawnLabels = {
-    StatsType.handLands: 'Lands drawn',
-    StatsType.libraryLands: 'Lands in library',
-    StatsType.cardPositions: 'Relevant cards drawn',
-    StatsType.cardCopies: 'Copies drawn'
-  };
   return [
     if ((const [StatsType.handLands, StatsType.cardCopies]).contains(type))
       Option.of('deckSize', 'Cards in deck'),
@@ -253,7 +277,7 @@ String _weekLabel(int i) {
       ' - ${_months[endOfWeek.month]} ${endOfWeek.day}';
 }
 
-void initialize(ParametersBuilder b, int maxWeek) {
+void initialize(ParametersBuilder b) {
   b.type = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Chart type'
@@ -263,17 +287,22 @@ void initialize(ParametersBuilder b, int maxWeek) {
       Option.of(StatsType.libraryLands, 'Lands in library'),
       Option.of(StatsType.cardPositions, 'Cards by position in decklist'),
       Option.of(StatsType.cardCopies, 'Cards by number of copies')
-    ]));
+    ])
+    ..multiSelections = BuiltList());
 
   b.xAxis = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'X axis'
-    ..value = 'decklistPosition');
+    ..value = 'decklistPosition'
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
 
   b.breakdownBy = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Breakdown by'
-    ..value = 'numDrawn');
+    ..value = 'numDrawn'
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
 
   b.options = Parameter((p) => p
     ..type = ParameterType.toggles
@@ -284,18 +313,22 @@ void initialize(ParametersBuilder b, int maxWeek) {
       Option.of(DisplayOption.bugged, 'Show prediction for bug', true),
       Option.of(DisplayOption.count, 'Show values by count', false),
       Option.of(DisplayOption.sampleSize, 'Show sample sizes', false)
-    ]));
+    ])
+    ..multiSelections = BuiltList());
 
   b.deckSize = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Cards in deck'
+    ..value = 60
     ..options = BuiltList([Option.of(40, '40'), Option.of(60, '60')])
-    ..value = 60);
+    ..multiSelections = BuiltList());
 
   b.numCards = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Number of relevant cards'
-    ..value = 0);
+    ..value = 0
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
 
   b.bestOf = Parameter((p) => p
     ..type = ParameterType.toggles
@@ -329,22 +362,31 @@ void initialize(ParametersBuilder b, int maxWeek) {
 
   b.numDrawn = Parameter((p) => p
     ..type = ParameterType.toggles
-    ..name = 'Amount drawn'
-    ..value = 1);
+    ..name = numDrawnLabels[StatsType.cardPositions]
+    ..value = 1
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
 
   b.landsInHand = Parameter((p) => p
     ..type = ParameterType.toggles
-    ..name = 'Lands in opening hand');
+    ..name = 'Lands in opening hand'
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
 
   b.libraryPosition = Parameter((p) => p
     ..type = ParameterType.toggles
-    ..name = 'Cards from library');
+    ..name = 'Cards from library'
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
 
   b.decklistPosition = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Position in decklist'
-    ..value = 0);
+    ..value = 0
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
 
+  int maxWeek = DateTime.now().difference(_endOfWeek0).inDays ~/ 7 + 1;
   b.weeks = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Weeks'
@@ -361,6 +403,30 @@ void initialize(ParametersBuilder b, int maxWeek) {
       Option.all(p.options.sublist(0, 21), 'Before M20'),
       Option.all(p.options.sublist(22), 'After M20')
     ]));
+
+  void dummyParam<T>(ParameterBuilder<T> p) {
+    p..type = ParameterType.toggles
+      ..name = 'placeholder'
+      ..options = BuiltList()
+      ..multiSelections = BuiltList();
+  }
+  var dummy = Parameters((p) => p
+      ..type = Parameter(dummyParam)
+      ..xAxis = Parameter(dummyParam)
+      ..breakdownBy = Parameter(dummyParam)
+      ..options = Parameter(dummyParam)
+      ..deckSize = Parameter(dummyParam)
+      ..numCards = Parameter(dummyParam)
+      ..bestOf = Parameter(dummyParam)
+      ..shuffling = Parameter(dummyParam)
+      ..mulliganType = Parameter(dummyParam)
+      ..mulligans = Parameter(dummyParam)
+      ..numDrawn = Parameter(dummyParam)
+      ..landsInHand = Parameter(dummyParam)
+      ..libraryPosition = Parameter(dummyParam)
+      ..decklistPosition = Parameter(dummyParam)
+      ..weeks = Parameter(dummyParam)
+  );
 
   validate(Parameters(), b);
 }
@@ -461,7 +527,7 @@ void validate(Parameters old, ParametersBuilder updated) {
               before.multiSelections[i].selected) {
             BuiltSet<T> vals = after.multiSelections[i].value;
             bool selected = after.multiSelections[i].selected;
-            after.options.map((o) => vals.contains(o.value)
+            after.options = after.options.map((o) => vals.contains(o.value)
                 ? o.rebuild((b) => b.selected = selected)
                 : o);
             break;
@@ -471,7 +537,7 @@ void validate(Parameters old, ParametersBuilder updated) {
       if (after.options != before.options && after.multiSelections.isNotEmpty) {
         BuiltSet<T> selectedVals =
             BuiltSet([for (var o in after.options) o.value]);
-        after.multiSelections.map((m) =>
+        after.multiSelections = after.multiSelections.map((m) =>
             Option.of(m.value, m.label, m.value.every(selectedVals.contains)));
       }
     };
@@ -603,7 +669,10 @@ void validate(Parameters old, ParametersBuilder updated) {
     if (type == StatsType.cardCopies) lastSelected(updated.numCards) ?? 4
   ].reduce(min);
   updated.numDrawn = updated.numDrawn
-      .rebuild(paramUpdater(old.numDrawn, _builtRange(0, maxPossibleDrawn)));
+      .rebuild((builder) {
+        paramUpdater(old.numDrawn, _builtRange(0, maxPossibleDrawn))(builder);
+        builder.name = numDrawnLabels[type];
+      });
 
   if (type == StatsType.libraryLands) {
     newOptions = _builtRange(0, 7);

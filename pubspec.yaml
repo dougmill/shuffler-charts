@@ -19,9 +19,9 @@ dependencies:
 
 dev_dependencies:
   angular_test: ^2.3.0
-  build_runner: ^1.5.2
+  build_runner: ^1.6.7
   build_test: ^0.10.8
-  build_web_compilers: ^2.1.0
+  build_web_compilers: ^2.2.3
   built_value_generator: ^6.6.0
   json_serializable: ^3.0.0
   pedantic: ^1.7.0

@@ -20,7 +20,7 @@ class ParametersComponent {
   final _output = BehaviorSubject<Parameters>();
 
   @Input()
-  set params(Parameters params) {
+  set parameters(Parameters params) {
     if (paramsBuilder == null) {
       var map = params.asMap;
       paramKeys = BuiltList.of(map.keys);
@@ -33,7 +33,7 @@ class ParametersComponent {
   }
 
   @Output()
-  Stream<Parameters> get paramsChange => _output.stream;
+  Stream<Parameters> get parametersChange => _output.stream;
 }
 
 class _MapBuilderWrapper<K, V> {
