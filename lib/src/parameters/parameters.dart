@@ -428,7 +428,7 @@ void initialize(ParametersBuilder b) {
       ..weeks = Parameter(dummyParam)
   );
 
-  validate(Parameters(), b);
+  validate(dummy, b);
 }
 
 void validate(Parameters old, ParametersBuilder updated) {
@@ -521,7 +521,8 @@ void validate(Parameters old, ParametersBuilder updated) {
   void Function(ParameterBuilder<T>) multiSelectionsUpdater<T>(
       Parameter<T> before) {
     return (after) {
-      if (after.multiSelections != before.multiSelections) {
+      if (after.multiSelections.length == before.multiSelections.length
+          && after.multiSelections != before.multiSelections) {
         for (int i = 0; i < after.multiSelections.length; i++) {
           if (after.multiSelections[i].selected !=
               before.multiSelections[i].selected) {
@@ -537,8 +538,8 @@ void validate(Parameters old, ParametersBuilder updated) {
       if (after.options != before.options && after.multiSelections.isNotEmpty) {
         BuiltSet<T> selectedVals =
             BuiltSet([for (var o in after.options) o.value]);
-        after.multiSelections = after.multiSelections.map((m) =>
-            Option.of(m.value, m.label, m.value.every(selectedVals.contains)));
+        after.multiSelections = BuiltList.of(after.multiSelections.map((m) =>
+            Option.of(m.value, m.label, m.value.every(selectedVals.contains))));
       }
     };
   }

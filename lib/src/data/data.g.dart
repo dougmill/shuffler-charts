@@ -369,7 +369,7 @@ class _$Group extends Group {
   final int week;
   @override
   final StatsType type;
-  BuiltMap<String, dynamic> __asMap;
+  BuiltMap<String, Object> __asMap;
 
   factory _$Group([void Function(GroupBuilder) updates]) =>
       (new GroupBuilder()..update(updates)).build();
@@ -407,7 +407,7 @@ class _$Group extends Group {
   }
 
   @override
-  BuiltMap<String, dynamic> get asMap => __asMap ??= super.asMap;
+  BuiltMap<String, Object> get asMap => __asMap ??= super.asMap;
 
   @override
   Group rebuild(void Function(GroupBuilder) updates) =>

@@ -37,7 +37,7 @@ class DataService {
   }
 
   Stream<LoadingState> _fetchData(FetchParameters params) async* {
-    String url = 'shuffler_stats.json';
+    String url = '/${params.type.name}.json';
     Future<String> request = http.read(url);
     yield LoadingState((b) => b.stage = LoadingStage.fetching);
     String rawData = await request;
@@ -56,7 +56,7 @@ class DataService {
       yield LoadingState((b) => b
         ..stage = LoadingStage.processing
         ..progress = i / json.length);
-      dataBuilder.add(dataSerializers.deserialize(json,
+      dataBuilder.add(dataSerializers.deserialize(json[i],
           specifiedType: entryTypes[params.type]));
     }
     yield LoadingState((b) => b

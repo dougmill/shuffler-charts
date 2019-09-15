@@ -13,8 +13,11 @@ part 'data.g.dart';
   CardsByPositionEntry,
   CardsByCountEntry
 ])
-Serializers dataSerializers =
-    (_$dataSerializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();
+Serializers dataSerializers = (_$dataSerializers.toBuilder()
+      ..addBuilderFactory(
+          const FullType(BuiltList, [FullType(num)]), () => ListBuilder<num>())
+      ..addPlugin(StandardJsonPlugin()))
+    .build();
 
 @JsonSerializable(createFactory: false)
 abstract class Group implements Built<Group, GroupBuilder> {
@@ -30,7 +33,7 @@ abstract class Group implements Built<Group, GroupBuilder> {
 
   @JsonKey(ignore: true)
   @memoized
-  BuiltMap<String, dynamic> get asMap => BuiltMap(_$GroupToJson(this));
+  BuiltMap<String, Object> get asMap => BuiltMap(_$GroupToJson(this));
 
   Group._();
   factory Group([void Function(GroupBuilder) updates]) = _$Group;
