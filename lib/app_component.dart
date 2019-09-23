@@ -30,6 +30,7 @@ class AppComponent {
     if (p.isValid) {
       lastValidParams = p;
     }
+    _params = p;
   }
 
   AppComponent() {

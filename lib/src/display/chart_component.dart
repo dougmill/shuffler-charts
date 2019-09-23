@@ -45,6 +45,10 @@ class ChartComponent implements OnInit {
   }
 
   void _updateChart() {
+    if (state.value == null) {
+      chart = null;
+      return;
+    }
     List<Object> breakdownValues;
     bool showCounts = _params.options.options
         .firstWhere((o) => o.value == DisplayOption.count)

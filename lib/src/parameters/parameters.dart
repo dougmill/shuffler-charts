@@ -528,16 +528,16 @@ void validate(Parameters old, ParametersBuilder updated) {
               before.multiSelections[i].selected) {
             BuiltSet<T> vals = after.multiSelections[i].value;
             bool selected = after.multiSelections[i].selected;
-            after.options = after.options.map((o) => vals.contains(o.value)
+            after.options = BuiltList.of(after.options.map((o) => vals.contains(o.value)
                 ? o.rebuild((b) => b.selected = selected)
-                : o);
+                : o));
             break;
           }
         }
       }
       if (after.options != before.options && after.multiSelections.isNotEmpty) {
         BuiltSet<T> selectedVals =
-            BuiltSet([for (var o in after.options) o.value]);
+            BuiltSet([for (var o in after.options) if (o.selected) o.value]);
         after.multiSelections = BuiltList.of(after.multiSelections.map((m) =>
             Option.of(m.value, m.label, m.value.every(selectedVals.contains))));
       }
@@ -556,6 +556,15 @@ void validate(Parameters old, ParametersBuilder updated) {
     };
   }
 
+  void Function(ParameterBuilder<T>) defaultParamUpdater<T>(
+      Parameter<T> before
+  ) {
+    return (p) {
+      multiSelectionsUpdater(before)(p);
+      defaultErrorSetter()(p);
+    };
+  }
+
   void Function(ParameterBuilder<T>) paramUpdater<T>(
       Parameter<T> before, BuiltList<Option<T>> options,
       [ParameterType type]) {
@@ -564,8 +573,7 @@ void validate(Parameters old, ParametersBuilder updated) {
         p.type = type;
       }
       optionsSetter(options)(p);
-      multiSelectionsUpdater(before)(p);
-      defaultErrorSetter()(p);
+      defaultParamUpdater(before)(p);
     };
   }
 
@@ -644,7 +652,7 @@ void validate(Parameters old, ParametersBuilder updated) {
     errorSetter(error)(p);
   });
 
-  updated.mulligans = updated.mulligans.rebuild(defaultErrorSetter());
+  updated.mulligans = updated.mulligans.rebuild(defaultParamUpdater(old.mulligans));
 
   int firstSelected(Parameter<int> p) {
     return p.options.firstWhere((o) => o.selected, orElse: () => null)?.value;
@@ -694,14 +702,14 @@ void validate(Parameters old, ParametersBuilder updated) {
   if (type == StatsType.cardPositions) {
     int minBlockSize = max(updated.numCards.value ?? 1, 1);
     newOptions =
-        _builtRange(0, updated.deckSize.value - minBlockSize + 1, (i) => i + 1);
+        _builtRange(0, updated.deckSize.value - minBlockSize, (i) => i + 1);
   } else {
     newOptions = BuiltList();
   }
   updated.decklistPosition = updated.decklistPosition
       .rebuild(paramUpdater(old.decklistPosition, newOptions));
 
-  updated.weeks = updated.weeks.rebuild(defaultErrorSetter());
+  updated.weeks = updated.weeks.rebuild(defaultParamUpdater(old.weeks));
 
   updated.onSet = onSet;
 }

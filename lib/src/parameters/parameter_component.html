@@ -1,6 +1,6 @@
 <header>{{ paramBuilder.name }}</header>
 
-<template [ngSwitch]="paramBuilder.type">
+<template #content [ngSwitch]="paramBuilder.type">
   <select *ngSwitchCase="ParameterType.selection" [(ngModel)]="paramBuilder.value">
     <option *ngFor="let option of paramBuilder.options; trackBy: trackByLabel"
             [ngValue]="option.value">
@@ -12,5 +12,6 @@
     <shuffle-options-list [(options)]="paramBuilder.options"></shuffle-options-list>
   </template>
 </template>
+<template [ngTemplateOutlet]="content"></template>
 
 <footer *ngIf="paramBuilder.error != null">{{ paramBuilder.error }}</footer>

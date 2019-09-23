@@ -1,4 +1,4 @@
-<template [ngSwitch]="state.value.stage == LoadingStage.loaded">
+<template [ngSwitch]="state.value?.stage == LoadingStage.loaded">
   <template [ngSwitchCase]="true">
     <header *ngIf="columnHeader != null">{{ columnHeader }}</header>
     <table>
