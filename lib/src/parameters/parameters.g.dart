@@ -294,7 +294,7 @@ class _$Parameters extends Parameters {
   final Parameter<int> decklistPosition;
   @override
   final Parameter<int> weeks;
-  BuiltMap<String, Parameter<dynamic>> __asMap;
+  BuiltMap<String, Parameter> __asMap;
   bool __isValid;
 
   factory _$Parameters([void Function(ParametersBuilder) updates]) =>
@@ -365,7 +365,7 @@ class _$Parameters extends Parameters {
   }
 
   @override
-  BuiltMap<String, Parameter<dynamic>> get asMap => __asMap ??= super.asMap;
+  BuiltMap<String, Parameter> get asMap => __asMap ??= super.asMap;
 
   @override
   bool get isValid => __isValid ??= super.isValid;
@@ -924,17 +924,24 @@ class OptionBuilder<T> implements Builder<Option<T>, OptionBuilder<T>> {
 // JsonSerializableGenerator
 // **************************************************************************
 
-Map<String, dynamic> _$StatsTypeToJson(StatsType instance) =>
-    <String, dynamic>{'name': instance.name};
+Map<String, dynamic> _$StatsTypeToJson(StatsType instance) => <String, dynamic>{
+      'name': instance.name,
+    };
 
 Map<String, dynamic> _$DisplayOptionToJson(DisplayOption instance) =>
-    <String, dynamic>{'name': instance.name, 'label': instance.label};
+    <String, dynamic>{
+      'name': instance.name,
+      'label': instance.label,
+    };
 
-Map<String, dynamic> _$ShufflingToJson(Shuffling instance) =>
-    <String, dynamic>{'name': instance.name};
+Map<String, dynamic> _$ShufflingToJson(Shuffling instance) => <String, dynamic>{
+      'name': instance.name,
+    };
 
 Map<String, dynamic> _$MulliganTypeToJson(MulliganType instance) =>
-    <String, dynamic>{'name': instance.name};
+    <String, dynamic>{
+      'name': instance.name,
+    };
 
 Map<String, dynamic> _$ParametersToJson(Parameters instance) =>
     <String, dynamic>{
@@ -952,7 +959,7 @@ Map<String, dynamic> _$ParametersToJson(Parameters instance) =>
       'landsInHand': instance.landsInHand,
       'libraryPosition': instance.libraryPosition,
       'decklistPosition': instance.decklistPosition,
-      'weeks': instance.weeks
+      'weeks': instance.weeks,
     };
 
 Parameter<T> _$ParameterFromJson<T>(Map<String, dynamic> json) {

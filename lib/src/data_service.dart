@@ -16,14 +16,14 @@ part 'data_service.g.dart';
 
 /// Service that handles fetching, combining, and caching data from the server.
 class DataService {
-  final _dataCache = Map<FetchParameters, ValueObservable<LoadingState>>();
-  final _statsCache = Map<Parameters, ValueObservable<LoadingState>>();
+  final _dataCache = Map<FetchParameters, ValueStream<LoadingState>>();
+  final _statsCache = Map<Parameters, ValueStream<LoadingState>>();
 
-  ValueObservable<LoadingState> loadStats(Parameters params) {
+  ValueStream<LoadingState> loadStats(Parameters params) {
     return _statsCache[params] ??= _fromStream(_loadStats(params));
   }
 
-  ValueObservable<T> _fromStream<T>(Stream<T> stream) {
+  ValueStream<T> _fromStream<T>(Stream<T> stream) {
     var obs = BehaviorSubject<T>();
     return obs..addStream(stream).then((_) => obs.close());
   }

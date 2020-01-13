@@ -59,7 +59,7 @@ class _$GroupSerializer implements StructuredSerializer<Group> {
   final String wireName = 'Group';
 
   @override
-  Iterable serialize(Serializers serializers, Group object,
+  Iterable<Object> serialize(Serializers serializers, Group object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'deckSize',
@@ -87,7 +87,7 @@ class _$GroupSerializer implements StructuredSerializer<Group> {
   }
 
   @override
-  Group deserialize(Serializers serializers, Iterable serialized,
+  Group deserialize(Serializers serializers, Iterable<Object> serialized,
       {FullType specifiedType = FullType.unspecified}) {
     final result = new GroupBuilder();
 
@@ -140,7 +140,7 @@ class _$LandsInHandEntrySerializer
   final String wireName = 'LandsInHandEntry';
 
   @override
-  Iterable serialize(Serializers serializers, LandsInHandEntry object,
+  Iterable<Object> serialize(Serializers serializers, LandsInHandEntry object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
@@ -156,7 +156,8 @@ class _$LandsInHandEntrySerializer
   }
 
   @override
-  LandsInHandEntry deserialize(Serializers serializers, Iterable serialized,
+  LandsInHandEntry deserialize(
+      Serializers serializers, Iterable<Object> serialized,
       {FullType specifiedType = FullType.unspecified}) {
     final result = new LandsInHandEntryBuilder();
 
@@ -174,7 +175,7 @@ class _$LandsInHandEntrySerializer
           result.data.replace(serializers.deserialize(value,
               specifiedType: const FullType(BuiltList, const [
                 const FullType(BuiltList, const [const FullType(num)])
-              ])) as BuiltList);
+              ])) as BuiltList<dynamic>);
           break;
       }
     }
@@ -194,7 +195,8 @@ class _$LandsInLibraryEntrySerializer
   final String wireName = 'LandsInLibraryEntry';
 
   @override
-  Iterable serialize(Serializers serializers, LandsInLibraryEntry object,
+  Iterable<Object> serialize(
+      Serializers serializers, LandsInLibraryEntry object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
@@ -214,7 +216,8 @@ class _$LandsInLibraryEntrySerializer
   }
 
   @override
-  LandsInLibraryEntry deserialize(Serializers serializers, Iterable serialized,
+  LandsInLibraryEntry deserialize(
+      Serializers serializers, Iterable<Object> serialized,
       {FullType specifiedType = FullType.unspecified}) {
     final result = new LandsInLibraryEntryBuilder();
 
@@ -236,7 +239,7 @@ class _$LandsInLibraryEntrySerializer
                     const FullType(BuiltList, const [const FullType(num)])
                   ])
                 ])
-              ])) as BuiltList);
+              ])) as BuiltList<dynamic>);
           break;
       }
     }
@@ -256,7 +259,8 @@ class _$CardsByPositionEntrySerializer
   final String wireName = 'CardsByPositionEntry';
 
   @override
-  Iterable serialize(Serializers serializers, CardsByPositionEntry object,
+  Iterable<Object> serialize(
+      Serializers serializers, CardsByPositionEntry object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
@@ -274,7 +278,8 @@ class _$CardsByPositionEntrySerializer
   }
 
   @override
-  CardsByPositionEntry deserialize(Serializers serializers, Iterable serialized,
+  CardsByPositionEntry deserialize(
+      Serializers serializers, Iterable<Object> serialized,
       {FullType specifiedType = FullType.unspecified}) {
     final result = new CardsByPositionEntryBuilder();
 
@@ -294,7 +299,7 @@ class _$CardsByPositionEntrySerializer
                 const FullType(BuiltList, const [
                   const FullType(BuiltList, const [const FullType(num)])
                 ])
-              ])) as BuiltList);
+              ])) as BuiltList<dynamic>);
           break;
       }
     }
@@ -311,7 +316,7 @@ class _$CardsByCountEntrySerializer
   final String wireName = 'CardsByCountEntry';
 
   @override
-  Iterable serialize(Serializers serializers, CardsByCountEntry object,
+  Iterable<Object> serialize(Serializers serializers, CardsByCountEntry object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
       'group',
@@ -327,7 +332,8 @@ class _$CardsByCountEntrySerializer
   }
 
   @override
-  CardsByCountEntry deserialize(Serializers serializers, Iterable serialized,
+  CardsByCountEntry deserialize(
+      Serializers serializers, Iterable<Object> serialized,
       {FullType specifiedType = FullType.unspecified}) {
     final result = new CardsByCountEntryBuilder();
 
@@ -345,7 +351,7 @@ class _$CardsByCountEntrySerializer
           result.data.replace(serializers.deserialize(value,
               specifiedType: const FullType(BuiltList, const [
                 const FullType(BuiltList, const [const FullType(num)])
-              ])) as BuiltList);
+              ])) as BuiltList<dynamic>);
           break;
       }
     }
@@ -991,5 +997,5 @@ Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
       'shuffling': instance.shuffling,
       'mulliganType': instance.mulliganType,
       'week': instance.week,
-      'type': instance.type
+      'type': instance.type,
     };

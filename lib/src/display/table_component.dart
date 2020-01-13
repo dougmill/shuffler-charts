@@ -41,7 +41,7 @@ class TableComponent {
   }
 
   final DataService _dataService;
-  ValueObservable<LoadingState> state;
+  ValueStream<LoadingState> state;
   Table _table;
 
   TableComponent(this._dataService);

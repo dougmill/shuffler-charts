@@ -30,7 +30,7 @@ class ChartComponent implements OnInit {
   }
 
   final DataService _dataService;
-  ValueObservable<LoadingState> state;
+  ValueStream<LoadingState> state;
   Chart chart;
   @ViewChild('chartElement', read: CanvasElement)
   CanvasElement chartElement;
