@@ -72,15 +72,15 @@ class DataService {
         return MapEntry(k, BuiltSet<Object>.of([v.value]));
       } else {
         return MapEntry(
-            k, BuiltSet<Object>.of(v.options.where((o) => o.selected)));
+            k,
+            BuiltSet<Object>.of(
+                v.options.where((o) => o.selected).map((o) => o.value)));
       }
     });
 
     var options = BuiltMap<DisplayOption, bool>.of({
-      for (var option in params.options.options)
-        option.value: option.selected,
-      if (params.xAxis.value is DisplayOption)
-        params.xAxis.value: true
+      for (var option in params.options.options) option.value: option.selected,
+      if (params.xAxis.value is DisplayOption) params.xAxis.value: true
     });
     var statsBuilder = Map<DisplayOption, Map<Object, Map<Object, num>>>();
 
@@ -96,10 +96,10 @@ class DataService {
       Object xKey = '';
       var inputsForExpected = HypergeometricInputsBuilder()
         ..population = group.deckSize
-        ..hits = group.numCards;
+        ..hits = max(group.numCards, 1);
       var inputsForBugged = BuggedInputsBuilder()
         ..population = group.deckSize
-        ..hits = group.numCards;
+        ..hits = max(group.numCards, 1);
 
       void maybeSetKey(String name, Object value) {
         if (name == params.breakdownBy.value) {
@@ -156,21 +156,21 @@ class DataService {
           var buggedDistribution = options[DisplayOption.bugged]
               ? bugged(inputsForBugged.build())
               : const <double>[];
-          if (options[DisplayOption.sampleSize] ||
-              !options[DisplayOption.count]) {
-            addToStat(DisplayOption.sampleSize, sampleSize);
-          }
           for (int i = 0; i < list.length; i++) {
             maybeSetKey(indexName, i);
             if (!paramValuesMap[indexName].contains(i)) {
               continue;
+            }
+            if (options[DisplayOption.sampleSize] ||
+                !options[DisplayOption.count]) {
+              addToStat(DisplayOption.sampleSize, sampleSize);
             }
             if (options[DisplayOption.actual]) {
               addToStat(DisplayOption.actual, list[i]);
             }
             if (options[DisplayOption.expected]) {
               addToStat(
-                  DisplayOption.actual, expectedDistribution[i] * sampleSize);
+                  DisplayOption.expected, expectedDistribution[i] * sampleSize);
             }
             if (options[DisplayOption.bugged]) {
               addToStat(
@@ -194,9 +194,11 @@ class DataService {
 
     if (!options[DisplayOption.count]) {
       var sampleSizes = statsBuilder[DisplayOption.sampleSize];
+      statsBuilder.remove(DisplayOption.sampleSize);
       statsBuilder.forEach((displayOption, breakdownBuilder) =>
           breakdownBuilder.forEach((breakdown, xBuilder) => xBuilder
               .updateAll((x, count) => count / sampleSizes[breakdown][x])));
+      statsBuilder[DisplayOption.sampleSize] = sampleSizes;
     }
 
     if (params.xAxis.value is DisplayOption) {
@@ -220,7 +222,7 @@ class DataService {
         if (options[displayOption]) {
           var breakdownBuilder = MapBuilder<Object, BuiltMap<Object, num>>();
           breakdownMap.forEach((breakdown, xMap) =>
-          breakdownBuilder[breakdown] = BuiltMap<Object, num>.of(xMap));
+              breakdownBuilder[breakdown] = BuiltMap<Object, num>.of(xMap));
           lineStatsBuilder[displayOption] = breakdownBuilder.build();
         }
       });
