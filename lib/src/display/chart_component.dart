@@ -21,7 +21,7 @@ class ChartComponent implements OnInit {
     _params = value;
     chart = null;
     state = _dataService.loadStats(_params);
-    state.doOnDone(() {
+    state.listen((_) => {}, onDone: () {
       // In case a new value was set before loading finished.
       if (_params == value) {
         _updateChart();
@@ -32,7 +32,7 @@ class ChartComponent implements OnInit {
   final DataService _dataService;
   ValueStream<LoadingState> state;
   Chart chart;
-  @ViewChild('chartElement', read: CanvasElement)
+  @ViewChild('chartElement', read: HtmlElement)
   CanvasElement chartElement;
 
   ChartComponent(this._dataService);
@@ -45,7 +45,8 @@ class ChartComponent implements OnInit {
   }
 
   void _updateChart() {
-    if (state.value == null) {
+    if ((state.value?.lineStats?.values?.isEmpty ?? true) &&
+        (state.value?.scatterStats?.values?.isEmpty ?? true)) {
       chart = null;
       return;
     }

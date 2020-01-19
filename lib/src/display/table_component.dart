@@ -25,17 +25,21 @@ class TableComponent {
     _params = value;
     _table = null;
     state = _dataService.loadStats(_params);
-    state.doOnDone(() {
+    state.listen((_) => {}, onDone: () {
       // In case a new value was set before loading finished.
       if (_params != value) {
         return;
       }
-      if (_params.breakdownBy.value == 'none') {
-        _table = Table.forNoBreakdown(_params, state.value.lineStats);
-      } else if (state.value.lineStats != null) {
-        _table = Table.forLinesChart(_params, state.value.lineStats);
-      } else {
+      if (state.value.lineStats != null) {
+        if (_params.breakdownBy.value == 'none') {
+          _table = Table.forNoBreakdown(_params, state.value.lineStats);
+        } else {
+          _table = Table.forLinesChart(_params, state.value.lineStats);
+        }
+      } else if (state.value.scatterStats != null) {
         _table = Table.forScatterPlot(_params, state.value.scatterStats);
+      } else {
+        _table = null;
       }
     });
   }
