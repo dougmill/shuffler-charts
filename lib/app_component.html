@@ -1,6 +1,6 @@
 <h1>Shuffler Statistics</h1>
 <div class="display">
-  <shuffle-chart [parameters]="lastValidParams"></shuffle-chart>
-  <shuffle-table [parameters]="lastValidParams"></shuffle-table>
+  <shuffle-chart *ngIf="params.isValid" [parameters]="params"></shuffle-chart>
+  <shuffle-table *ngIf="params.isValid" [parameters]="params"></shuffle-table>
 </div>
 <shuffle-parameters [(parameters)]="params"></shuffle-parameters>

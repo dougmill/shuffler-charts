@@ -15,26 +15,21 @@ import 'package:shuffler_charts/src/parameters/parameters_component.dart';
   templateUrl: 'app_component.html',
   providers: const [ClassProvider(DataService)],
   directives: [
+    coreDirectives,
     ParametersComponent,
     ChartComponent,
     TableComponent,
   ],
 )
 class AppComponent {
-  Parameters lastValidParams;
-
   Parameters _params;
   Parameters get params => _params;
   set params(Parameters p) {
     p = p.rebuild((builder) => validate(_params, builder));
-    if (p.isValid) {
-      lastValidParams = p;
-    }
     _params = p;
   }
 
   AppComponent() {
-    lastValidParams = Parameters(initialize);
-    _params = lastValidParams;
+    _params = Parameters(initialize);
   }
 }
