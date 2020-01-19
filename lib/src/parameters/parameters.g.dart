@@ -293,7 +293,7 @@ class _$Parameters extends Parameters {
   @override
   final Parameter<int> decklistPosition;
   @override
-  final Parameter<int> weeks;
+  final Parameter<int> week;
   BuiltMap<String, Parameter> __asMap;
   bool __isValid;
 
@@ -315,7 +315,7 @@ class _$Parameters extends Parameters {
       this.landsInHand,
       this.libraryPosition,
       this.decklistPosition,
-      this.weeks})
+      this.week})
       : super._() {
     if (type == null) {
       throw new BuiltValueNullFieldError('Parameters', 'type');
@@ -359,8 +359,8 @@ class _$Parameters extends Parameters {
     if (decklistPosition == null) {
       throw new BuiltValueNullFieldError('Parameters', 'decklistPosition');
     }
-    if (weeks == null) {
-      throw new BuiltValueNullFieldError('Parameters', 'weeks');
+    if (week == null) {
+      throw new BuiltValueNullFieldError('Parameters', 'week');
     }
   }
 
@@ -395,7 +395,7 @@ class _$Parameters extends Parameters {
         landsInHand == other.landsInHand &&
         libraryPosition == other.libraryPosition &&
         decklistPosition == other.decklistPosition &&
-        weeks == other.weeks;
+        week == other.week;
   }
 
   @override
@@ -429,7 +429,7 @@ class _$Parameters extends Parameters {
                     landsInHand.hashCode),
                 libraryPosition.hashCode),
             decklistPosition.hashCode),
-        weeks.hashCode));
+        week.hashCode));
   }
 
   @override
@@ -449,7 +449,7 @@ class _$Parameters extends Parameters {
           ..add('landsInHand', landsInHand)
           ..add('libraryPosition', libraryPosition)
           ..add('decklistPosition', decklistPosition)
-          ..add('weeks', weeks))
+          ..add('week', week))
         .toString();
   }
 }
@@ -557,10 +557,10 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
     onSet();
   }
 
-  Parameter<int> _weeks;
-  Parameter<int> get weeks => _$this._weeks;
-  set weeks(Parameter<int> weeks) {
-    _$this._weeks = weeks;
+  Parameter<int> _week;
+  Parameter<int> get week => _$this._week;
+  set week(Parameter<int> week) {
+    _$this._week = week;
     onSet();
   }
 
@@ -582,7 +582,7 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
       _landsInHand = _$v.landsInHand;
       _libraryPosition = _$v.libraryPosition;
       _decklistPosition = _$v.decklistPosition;
-      _weeks = _$v.weeks;
+      _week = _$v.week;
       _$v = null;
     }
     return this;
@@ -619,7 +619,7 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
             landsInHand: landsInHand,
             libraryPosition: libraryPosition,
             decklistPosition: decklistPosition,
-            weeks: weeks);
+            week: week);
     replace(_$result);
     return _$result;
   }
@@ -959,7 +959,7 @@ Map<String, dynamic> _$ParametersToJson(Parameters instance) =>
       'landsInHand': instance.landsInHand,
       'libraryPosition': instance.libraryPosition,
       'decklistPosition': instance.decklistPosition,
-      'weeks': instance.weeks,
+      'week': instance.week,
     };
 
 Parameter<T> _$ParameterFromJson<T>(Map<String, dynamic> json) {

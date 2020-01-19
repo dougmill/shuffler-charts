@@ -30,7 +30,7 @@ class DisplayOption extends EnumClass {
   static const DisplayOption count = _$count;
   static const DisplayOption sampleSize = _$sampleSize;
 
-  const DisplayOption._(String name): super(name);
+  const DisplayOption._(String name) : super(name);
 
   static BuiltSet<DisplayOption> get values => _$displayOptionValues;
   static DisplayOption valueOf(String name) => _$displayOptionValueOf(name);
@@ -131,7 +131,7 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
   Parameter<int> get landsInHand;
   Parameter<int> get libraryPosition;
   Parameter<int> get decklistPosition;
-  Parameter<int> get weeks;
+  Parameter<int> get week;
 
   @JsonKey(ignore: true)
   @memoized
@@ -163,7 +163,7 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
           landsInHand: map['landsInHand'],
           libraryPosition: map['libraryPosition'],
           decklistPosition: map['decklistPosition'],
-          weeks: map['weeks']);
+          week: map['week']);
 }
 
 enum ParameterType { selection, toggles }
@@ -239,15 +239,23 @@ List<Option<String>> _getCommonAxisOptions(StatsType type) {
   ];
 }
 
-List<Option<int>> _range(int min, int max, [int labelFunc(int i)]) {
+List<Option<int>> _range(int min, int max,
+    {Object Function(int i) labelFunc,
+    List<int> selected = const [],
+    bool allSelected = false}) {
   labelFunc = labelFunc ?? (i) => i;
   return [
-    for (int i = min; i <= max; i++) Option.of(i, labelFunc(i).toString())
+    for (int i = min; i <= max; i++)
+      Option.of(i, labelFunc(i).toString(), allSelected || selected.contains(i))
   ];
 }
 
-BuiltList<Option<int>> _builtRange(int min, int max, [int labelFunc(int i)]) {
-  return BuiltList<Option<int>>(_range(min, max, labelFunc));
+BuiltList<Option<int>> _builtRange(int min, int max,
+    {Object Function(int i) labelFunc,
+    List<int> selected = const [],
+    bool allSelected = false}) {
+  return BuiltList<Option<int>>(_range(min, max,
+      labelFunc: labelFunc, selected: selected, allSelected: allSelected));
 }
 
 final DateTime _endOfWeek0 = DateTime.utc(2019, 2, 7, 15);
@@ -326,7 +334,7 @@ void initialize(ParametersBuilder b) {
   b.numCards = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Number of relevant cards'
-    ..value = 0
+    ..value = 1
     ..options = BuiltList()
     ..multiSelections = BuiltList());
 
@@ -357,14 +365,13 @@ void initialize(ParametersBuilder b) {
   b.mulligans = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Mulligans'
-    ..options = BuiltList(_range(0, 6))
+    ..options = BuiltList(_range(0, 6, selected: [0]))
     ..multiSelections = BuiltList([Option.all(p.options)]));
 
   b.numDrawn = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = numDrawnLabels[StatsType.cardPositions]
-    ..value = 1
-    ..options = BuiltList()
+    ..options = BuiltList(_range(0, 1, allSelected: true))
     ..multiSelections = BuiltList());
 
   b.landsInHand = Parameter((p) => p
@@ -382,18 +389,16 @@ void initialize(ParametersBuilder b) {
   b.decklistPosition = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Position in decklist'
-    ..value = 0
-    ..options = BuiltList()
+    ..options =
+        BuiltList(_range(0, 59, labelFunc: (i) => i + 1, allSelected: true))
     ..multiSelections = BuiltList());
 
   int maxWeek = DateTime.now().difference(_endOfWeek0).inDays ~/ 7 + 1;
-  b.weeks = Parameter((p) => p
+  b.week = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Weeks'
-    ..options = BuiltList([
-      for (int week = 0; week <= maxWeek; week++)
-        Option.of(week, _weekLabel(week), true)
-    ])
+    ..options =
+        BuiltList(_range(0, maxWeek, labelFunc: _weekLabel, allSelected: true))
     ..multiSelections = BuiltList([
       Option.all(p.options),
       Option.all(p.options.sublist(0, 2), 'Before smooth shuffling'),
@@ -405,28 +410,29 @@ void initialize(ParametersBuilder b) {
     ]));
 
   void dummyParam<T>(ParameterBuilder<T> p) {
-    p..type = ParameterType.toggles
+    p
+      ..type = ParameterType.toggles
       ..name = 'placeholder'
       ..options = BuiltList()
       ..multiSelections = BuiltList();
   }
+
   var dummy = Parameters((p) => p
-      ..type = Parameter(dummyParam)
-      ..xAxis = Parameter(dummyParam)
-      ..breakdownBy = Parameter(dummyParam)
-      ..options = Parameter(dummyParam)
-      ..deckSize = Parameter(dummyParam)
-      ..numCards = Parameter(dummyParam)
-      ..bestOf = Parameter(dummyParam)
-      ..shuffling = Parameter(dummyParam)
-      ..mulliganType = Parameter(dummyParam)
-      ..mulligans = Parameter(dummyParam)
-      ..numDrawn = Parameter(dummyParam)
-      ..landsInHand = Parameter(dummyParam)
-      ..libraryPosition = Parameter(dummyParam)
-      ..decklistPosition = Parameter(dummyParam)
-      ..weeks = Parameter(dummyParam)
-  );
+    ..type = Parameter(dummyParam)
+    ..xAxis = Parameter(dummyParam)
+    ..breakdownBy = Parameter(dummyParam)
+    ..options = Parameter(dummyParam)
+    ..deckSize = Parameter(dummyParam)
+    ..numCards = Parameter(dummyParam)
+    ..bestOf = Parameter(dummyParam)
+    ..shuffling = Parameter(dummyParam)
+    ..mulliganType = Parameter(dummyParam)
+    ..mulligans = Parameter(dummyParam)
+    ..numDrawn = Parameter(dummyParam)
+    ..landsInHand = Parameter(dummyParam)
+    ..libraryPosition = Parameter(dummyParam)
+    ..decklistPosition = Parameter(dummyParam)
+    ..week = Parameter(dummyParam));
 
   validate(dummy, b);
 }
@@ -521,16 +527,17 @@ void validate(Parameters old, ParametersBuilder updated) {
   void Function(ParameterBuilder<T>) multiSelectionsUpdater<T>(
       Parameter<T> before) {
     return (after) {
-      if (after.multiSelections.length == before.multiSelections.length
-          && after.multiSelections != before.multiSelections) {
+      if (after.multiSelections.length == before.multiSelections.length &&
+          after.multiSelections != before.multiSelections) {
         for (int i = 0; i < after.multiSelections.length; i++) {
           if (after.multiSelections[i].selected !=
               before.multiSelections[i].selected) {
             BuiltSet<T> vals = after.multiSelections[i].value;
             bool selected = after.multiSelections[i].selected;
-            after.options = BuiltList.of(after.options.map((o) => vals.contains(o.value)
-                ? o.rebuild((b) => b.selected = selected)
-                : o));
+            after.options = BuiltList.of(after.options.map((o) =>
+                vals.contains(o.value)
+                    ? o.rebuild((b) => b.selected = selected)
+                    : o));
             break;
           }
         }
@@ -550,15 +557,14 @@ void validate(Parameters old, ParametersBuilder updated) {
   void Function(ParameterBuilder<T>) defaultErrorSetter<T>() {
     return (p) {
       bool condition = p.type == ParameterType.toggles
-          ? isAnyValueSelected(p)
+          ? p.options.isEmpty || isAnyValueSelected(p)
           : isValueInOptions(p.build());
-      errorSetter(condition ? null : unsetError);
+      errorSetter(condition ? null : unsetError)(p);
     };
   }
 
   void Function(ParameterBuilder<T>) defaultParamUpdater<T>(
-      Parameter<T> before
-  ) {
+      Parameter<T> before) {
     return (p) {
       multiSelectionsUpdater(before)(p);
       defaultErrorSetter()(p);
@@ -585,14 +591,13 @@ void validate(Parameters old, ParametersBuilder updated) {
         if (updated.deckSize.value != 40) ..._range(10, 13),
         ..._range(14, 20),
         if (updated.deckSize.value != 40) ..._range(21, 28)
-      ] else
-        if (type == StatsType.cardPositions) ...[
-          Option.of(0, 'Estimate for every card'),
-          ..._range(1, 4),
-          if (updated.deckSize.value != 60) ..._range(15, 18),
-          if (updated.deckSize.value != 40) ..._range(22, 25)
-        ] else
-          if (type == StatsType.cardCopies) ..._range(2, 4)
+      ] else if (type == StatsType.cardPositions) ...[
+        Option.of(0, 'Estimate for every card'),
+        ..._range(1, 4),
+        if (updated.deckSize.value != 60) ..._range(15, 18),
+        if (updated.deckSize.value != 40) ..._range(22, 25)
+      ] else if (type == StatsType.cardCopies)
+        ..._range(2, 4)
     ]);
 
     var paramType =
@@ -631,9 +636,9 @@ void validate(Parameters old, ParametersBuilder updated) {
   }
 
   var mulliganTypesForSelectedWeeks = BuiltList.of([
-    if (updated.weeks.options.any((week) => week.selected && week.value < 22))
+    if (updated.week.options.any((week) => week.selected && week.value < 22))
       MulliganType.vancouver,
-    if (updated.weeks.options
+    if (updated.week.options
         .any((week) => week.selected && (week.value == 18 || week.value >= 21)))
       MulliganType.london
   ]);
@@ -652,7 +657,8 @@ void validate(Parameters old, ParametersBuilder updated) {
     errorSetter(error)(p);
   });
 
-  updated.mulligans = updated.mulligans.rebuild(defaultParamUpdater(old.mulligans));
+  updated.mulligans =
+      updated.mulligans.rebuild(defaultParamUpdater(old.mulligans));
 
   int firstSelected(Parameter<int> p) {
     return p.options.firstWhere((o) => o.selected, orElse: () => null)?.value;
@@ -665,23 +671,20 @@ void validate(Parameters old, ParametersBuilder updated) {
   int maxPossibleDrawn = [
     if (type == StatsType.libraryLands)
       (lastSelected(updated.libraryPosition) ?? 9) + 1
+    else if (isValueSelected(updated.mulliganType, MulliganType.london))
+      7
     else
-      if (isValueSelected(updated.mulliganType, MulliganType.london))
-        7
-      else
-        7 - (lastSelected(updated.mulligans) ?? 0),
+      7 - (firstSelected(updated.mulligans) ?? 0),
     if (type == StatsType.libraryLands)
       (updated.numCards.value ?? 25) -
           (firstSelected(updated.landsInHand) ?? 0),
-    if (type == StatsType.cardPositions)
-      max(lastSelected(updated.numCards) ?? 25, 1),
+    if (type == StatsType.cardPositions) max(updated.numCards.value ?? 25, 1),
     if (type == StatsType.cardCopies) lastSelected(updated.numCards) ?? 4
   ].reduce(min);
-  updated.numDrawn = updated.numDrawn
-      .rebuild((builder) {
-        paramUpdater(old.numDrawn, _builtRange(0, maxPossibleDrawn))(builder);
-        builder.name = numDrawnLabels[type];
-      });
+  updated.numDrawn = updated.numDrawn.rebuild((builder) {
+    paramUpdater(old.numDrawn, _builtRange(0, maxPossibleDrawn))(builder);
+    builder.name = numDrawnLabels[type];
+  });
 
   if (type == StatsType.libraryLands) {
     newOptions = _builtRange(0, 7);
@@ -692,7 +695,7 @@ void validate(Parameters old, ParametersBuilder updated) {
       updated.landsInHand.rebuild(paramUpdater(old.landsInHand, newOptions));
 
   if (type == StatsType.libraryLands) {
-    newOptions = _builtRange(0, 9, (i) => i + 1);
+    newOptions = _builtRange(0, 9, labelFunc: (i) => i + 1);
   } else {
     newOptions = BuiltList();
   }
@@ -701,15 +704,15 @@ void validate(Parameters old, ParametersBuilder updated) {
 
   if (type == StatsType.cardPositions) {
     int minBlockSize = max(updated.numCards.value ?? 1, 1);
-    newOptions =
-        _builtRange(0, updated.deckSize.value - minBlockSize, (i) => i + 1);
+    newOptions = _builtRange(0, updated.deckSize.value - minBlockSize,
+        labelFunc: (i) => i + 1);
   } else {
     newOptions = BuiltList();
   }
   updated.decklistPosition = updated.decklistPosition
       .rebuild(paramUpdater(old.decklistPosition, newOptions));
 
-  updated.weeks = updated.weeks.rebuild(defaultParamUpdater(old.weeks));
+  updated.week = updated.week.rebuild(defaultParamUpdater(old.week));
 
   updated.onSet = onSet;
 }
