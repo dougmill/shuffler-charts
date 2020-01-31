@@ -41,20 +41,22 @@ class TableComponent {
       } else {
         _table = null;
       }
+      _ref.markForCheck();
     });
   }
 
   final DataService _dataService;
+  final ChangeDetectorRef _ref;
   ValueStream<LoadingState> state;
   Table _table;
 
-  TableComponent(this._dataService);
+  TableComponent(this._dataService, this._ref);
 
-  String get columnHeader => _table.columnHeader;
-  String get rowHeader => _table.rowHeader;
-  BuiltList<String> get columnLabels => _table.columnLabels;
-  BuiltList<String> get rowLabels => _table.rowLabels;
-  BuiltMap<String, BuiltMap<String, num>> get values => _table.values;
+  String get columnHeader => _table?.columnHeader;
+  String get rowHeader => _table?.rowHeader;
+  BuiltList<String> get columnLabels => _table?.columnLabels;
+  BuiltList<String> get rowLabels => _table?.rowLabels;
+  BuiltMap<String, BuiltMap<String, num>> get values => _table?.values;
 }
 
 @BuiltValue(nestedBuilders: false)

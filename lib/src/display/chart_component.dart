@@ -30,12 +30,13 @@ class ChartComponent implements OnInit {
   }
 
   final DataService _dataService;
+  final ChangeDetectorRef _ref;
   ValueStream<LoadingState> state;
   Chart chart;
   @ViewChild('chartElement', read: HtmlElement)
   CanvasElement chartElement;
 
-  ChartComponent(this._dataService);
+  ChartComponent(this._dataService, this._ref);
 
   @override
   void ngOnInit() {
@@ -184,5 +185,6 @@ class ChartComponent implements OnInit {
                   hover: ChartHoverOptions(animationDuration: 0),
                   responsiveAnimationDuration: 0)));
     }
+    _ref.markForCheck();
   }
 }

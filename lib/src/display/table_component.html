@@ -1,16 +1,11 @@
-<template [ngSwitch]="state.value?.stage == LoadingStage.loaded">
-  <template [ngSwitchCase]="true">
-    <header *ngIf="columnHeader != null">{{ columnHeader }}</header>
-    <table>
-      <tr>
-        <th>{{ rowHeader }}</th>
-        <th *ngFor="let column of columnLabels">{{ column }}</th>
-      </tr>
-      <tr *ngFor="let row of rowLabels">
-        <td>{{ row }}</td>
-        <td *ngFor="let column of columnLabels">{{ values[row][column] }}</td>
-      </tr>
-    </table>
-  </template>
-  <shuffle-loading *ngSwitchCase="false" [state]="state"></shuffle-loading>
-</template>
+<header *ngIf="columnHeader != null">{{ columnHeader }}</header>
+<table>
+  <tr>
+    <th>{{ rowHeader }}</th>
+    <th *ngFor="let column of columnLabels">{{ column }}</th>
+  </tr>
+  <tr *ngFor="let row of rowLabels">
+    <td>{{ row }}</td>
+    <td *ngFor="let column of columnLabels">{{ values[row][column] }}</td>
+  </tr>
+</table>

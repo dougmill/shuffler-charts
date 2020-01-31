@@ -1,6 +1,7 @@
 <h1>Shuffler Statistics</h1>
-<div class="display">
-  <shuffle-chart *ngIf="params.isValid" [parameters]="params"></shuffle-chart>
-  <shuffle-table *ngIf="params.isValid" [parameters]="params"></shuffle-table>
+<div [ngSwitch]="(state | async)?.stage == LoadingStage.loaded" class="display">
+  <shuffle-chart *ngSwitchCase="true" [parameters]="params"></shuffle-chart>
+  <shuffle-table *ngSwitchCase="true" [parameters]="params"></shuffle-table>
+  <shuffle-loading *ngSwitchCase="false" [state]="state"></shuffle-loading>
 </div>
 <shuffle-parameters [(parameters)]="params"></shuffle-parameters>
