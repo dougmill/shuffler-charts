@@ -12,7 +12,7 @@ import 'package:shuffler_charts/src/parameters/parameters.dart';
   selector: 'shuffle-chart',
   styleUrls: ['chart_component.css'],
   templateUrl: 'chart_component.html',
-  directives: const [coreDirectives],
+  directives: [coreDirectives],
 )
 class ChartComponent implements OnInit {
   Parameters _params;

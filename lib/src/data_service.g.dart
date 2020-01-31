@@ -6,6 +6,7 @@ part of 'data_service.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const LoadingStage _$invalid = const LoadingStage._('invalid');
 const LoadingStage _$fetching = const LoadingStage._('fetching');
 const LoadingStage _$parsing = const LoadingStage._('parsing');
 const LoadingStage _$processing = const LoadingStage._('processing');
@@ -14,6 +15,8 @@ const LoadingStage _$loaded = const LoadingStage._('loaded');
 
 LoadingStage _$loadingValueOf(String name) {
   switch (name) {
+    case 'invalid':
+      return _$invalid;
     case 'fetching':
       return _$fetching;
     case 'parsing':
@@ -31,6 +34,7 @@ LoadingStage _$loadingValueOf(String name) {
 
 final BuiltSet<LoadingStage> _$loadingValues =
     new BuiltSet<LoadingStage>(const <LoadingStage>[
+  _$invalid,
   _$fetching,
   _$parsing,
   _$processing,

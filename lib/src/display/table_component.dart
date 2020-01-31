@@ -15,8 +15,8 @@ part 'table_component.g.dart';
   selector: 'shuffle-table',
   styleUrls: ['table_component.css'],
   templateUrl: 'table_component.html',
-  directives: const [coreDirectives],
-  exports: const [LoadingStage],
+  directives: [coreDirectives],
+  exports: [LoadingStage],
 )
 class TableComponent {
   Parameters _params;

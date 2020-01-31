@@ -40,9 +40,11 @@ class DataService {
     String url = '/${params.type.name}.json';
     Future<String> request = http.read(url);
     yield LoadingState((b) => b.stage = LoadingStage.fetching);
+    await _runEventLoop();
     String rawData = await request;
 
     yield LoadingState((b) => b.stage = LoadingStage.parsing);
+    await _runEventLoop(true);
     const entryTypes = {
       StatsType.handLands: FullType(LandsInHandEntry),
       StatsType.libraryLands: FullType(LandsInLibraryEntry),
@@ -56,6 +58,7 @@ class DataService {
       yield LoadingState((b) => b
         ..stage = LoadingStage.processing
         ..progress = i / json.length);
+      await _runEventLoop();
       dataBuilder.add(dataSerializers.deserialize(json[i],
           specifiedType: entryTypes[params.type]));
     }
@@ -63,6 +66,7 @@ class DataService {
       ..stage = LoadingStage.processing
       ..progress = 1
       ..data = dataBuilder);
+    await _runEventLoop();
   }
 
   Stream<LoadingState> _aggregate(
@@ -89,6 +93,7 @@ class DataService {
       yield LoadingState((b) => b
         ..stage = LoadingStage.aggregating
         ..progress = i / data.length);
+      await _runEventLoop();
 
       var entry = data[i];
       var group = entry.group;
@@ -191,6 +196,7 @@ class DataService {
     yield LoadingState((b) => b
       ..stage = LoadingStage.aggregating
       ..progress = 1);
+    await _runEventLoop();
 
     if (!options[DisplayOption.count]) {
       var sampleSizes = statsBuilder[DisplayOption.sampleSize];
@@ -215,6 +221,7 @@ class DataService {
       yield LoadingState((b) => b
         ..stage = LoadingStage.loaded
         ..scatterStats = scatterStatsBuilder);
+      await _runEventLoop();
     } else {
       var lineStatsBuilder =
           MapBuilder<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>>();
@@ -230,11 +237,24 @@ class DataService {
       yield LoadingState((b) => b
         ..stage = LoadingStage.loaded
         ..lineStats = lineStatsBuilder);
+      await _runEventLoop();
     }
   }
 }
 
+Stopwatch _delayRegulator;
+
+Future<void> _runEventLoop([bool forceWait = false]) {
+  _delayRegulator ??= Stopwatch()..start();
+  if (_delayRegulator.elapsedMilliseconds < 50 && !forceWait) {
+    return Future.value();
+  }
+  _delayRegulator.reset();
+  return Future.delayed(Duration(milliseconds: 0));
+}
+
 class LoadingStage extends EnumClass {
+  static const LoadingStage invalid = _$invalid;
   static const LoadingStage fetching = _$fetching;
   static const LoadingStage parsing = _$parsing;
   static const LoadingStage processing = _$processing;
