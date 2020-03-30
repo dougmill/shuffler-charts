@@ -82,7 +82,18 @@ class _$GroupSerializer implements StructuredSerializer<Group> {
       serializers.serialize(object.type,
           specifiedType: const FullType(StatsType)),
     ];
-
+    if (object.landsInDeck != null) {
+      result
+        ..add('landsInDeck')
+        ..add(serializers.serialize(object.landsInDeck,
+            specifiedType: const FullType(int)));
+    }
+    if (object.independent != null) {
+      result
+        ..add('independent')
+        ..add(serializers.serialize(object.independent,
+            specifiedType: const FullType(bool)));
+    }
     return result;
   }
 
@@ -105,6 +116,10 @@ class _$GroupSerializer implements StructuredSerializer<Group> {
           result.numCards = serializers.deserialize(value,
               specifiedType: const FullType(int)) as int;
           break;
+        case 'landsInDeck':
+          result.landsInDeck = serializers.deserialize(value,
+              specifiedType: const FullType(int)) as int;
+          break;
         case 'bestOf':
           result.bestOf = serializers.deserialize(value,
               specifiedType: const FullType(int)) as int;
@@ -124,6 +139,10 @@ class _$GroupSerializer implements StructuredSerializer<Group> {
         case 'type':
           result.type = serializers.deserialize(value,
               specifiedType: const FullType(StatsType)) as StatsType;
+          break;
+        case 'independent':
+          result.independent = serializers.deserialize(value,
+              specifiedType: const FullType(bool)) as bool;
           break;
       }
     }
@@ -366,6 +385,8 @@ class _$Group extends Group {
   @override
   final int numCards;
   @override
+  final int landsInDeck;
+  @override
   final int bestOf;
   @override
   final Shuffling shuffling;
@@ -375,6 +396,8 @@ class _$Group extends Group {
   final int week;
   @override
   final StatsType type;
+  @override
+  final bool independent;
   BuiltMap<String, Object> __asMap;
 
   factory _$Group([void Function(GroupBuilder) updates]) =>
@@ -383,11 +406,13 @@ class _$Group extends Group {
   _$Group._(
       {this.deckSize,
       this.numCards,
+      this.landsInDeck,
       this.bestOf,
       this.shuffling,
       this.mulliganType,
       this.week,
-      this.type})
+      this.type,
+      this.independent})
       : super._() {
     if (deckSize == null) {
       throw new BuiltValueNullFieldError('Group', 'deckSize');
@@ -428,11 +453,13 @@ class _$Group extends Group {
     return other is Group &&
         deckSize == other.deckSize &&
         numCards == other.numCards &&
+        landsInDeck == other.landsInDeck &&
         bestOf == other.bestOf &&
         shuffling == other.shuffling &&
         mulliganType == other.mulliganType &&
         week == other.week &&
-        type == other.type;
+        type == other.type &&
+        independent == other.independent;
   }
 
   @override
@@ -441,12 +468,18 @@ class _$Group extends Group {
         $jc(
             $jc(
                 $jc(
-                    $jc($jc($jc(0, deckSize.hashCode), numCards.hashCode),
-                        bestOf.hashCode),
-                    shuffling.hashCode),
-                mulliganType.hashCode),
-            week.hashCode),
-        type.hashCode));
+                    $jc(
+                        $jc(
+                            $jc(
+                                $jc($jc(0, deckSize.hashCode),
+                                    numCards.hashCode),
+                                landsInDeck.hashCode),
+                            bestOf.hashCode),
+                        shuffling.hashCode),
+                    mulliganType.hashCode),
+                week.hashCode),
+            type.hashCode),
+        independent.hashCode));
   }
 
   @override
@@ -454,11 +487,13 @@ class _$Group extends Group {
     return (newBuiltValueToStringHelper('Group')
           ..add('deckSize', deckSize)
           ..add('numCards', numCards)
+          ..add('landsInDeck', landsInDeck)
           ..add('bestOf', bestOf)
           ..add('shuffling', shuffling)
           ..add('mulliganType', mulliganType)
           ..add('week', week)
-          ..add('type', type))
+          ..add('type', type)
+          ..add('independent', independent))
         .toString();
   }
 }
@@ -473,6 +508,10 @@ class GroupBuilder implements Builder<Group, GroupBuilder> {
   int _numCards;
   int get numCards => _$this._numCards;
   set numCards(int numCards) => _$this._numCards = numCards;
+
+  int _landsInDeck;
+  int get landsInDeck => _$this._landsInDeck;
+  set landsInDeck(int landsInDeck) => _$this._landsInDeck = landsInDeck;
 
   int _bestOf;
   int get bestOf => _$this._bestOf;
@@ -495,17 +534,23 @@ class GroupBuilder implements Builder<Group, GroupBuilder> {
   StatsType get type => _$this._type;
   set type(StatsType type) => _$this._type = type;
 
+  bool _independent;
+  bool get independent => _$this._independent;
+  set independent(bool independent) => _$this._independent = independent;
+
   GroupBuilder();
 
   GroupBuilder get _$this {
     if (_$v != null) {
       _deckSize = _$v.deckSize;
       _numCards = _$v.numCards;
+      _landsInDeck = _$v.landsInDeck;
       _bestOf = _$v.bestOf;
       _shuffling = _$v.shuffling;
       _mulliganType = _$v.mulliganType;
       _week = _$v.week;
       _type = _$v.type;
+      _independent = _$v.independent;
       _$v = null;
     }
     return this;
@@ -526,15 +571,18 @@ class GroupBuilder implements Builder<Group, GroupBuilder> {
 
   @override
   _$Group build() {
+    Group._finalizeBuilder(this);
     final _$result = _$v ??
         new _$Group._(
             deckSize: deckSize,
             numCards: numCards,
+            landsInDeck: landsInDeck,
             bestOf: bestOf,
             shuffling: shuffling,
             mulliganType: mulliganType,
             week: week,
-            type: type);
+            type: type,
+            independent: independent);
     replace(_$result);
     return _$result;
   }
@@ -990,12 +1038,22 @@ class CardsByCountEntryBuilder
 // JsonSerializableGenerator
 // **************************************************************************
 
-Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
-      'deckSize': instance.deckSize,
-      'numCards': instance.numCards,
-      'bestOf': instance.bestOf,
-      'shuffling': instance.shuffling,
-      'mulliganType': instance.mulliganType,
-      'week': instance.week,
-      'type': instance.type,
-    };
+Map<String, dynamic> _$GroupToJson(Group instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('deckSize', instance.deckSize);
+  writeNotNull('numCards', instance.numCards);
+  writeNotNull('bestOf', instance.bestOf);
+  writeNotNull('shuffling', instance.shuffling);
+  writeNotNull('mulliganType', instance.mulliganType);
+  writeNotNull('week', instance.week);
+  writeNotNull('type', instance.type);
+  writeNotNull('independent', instance.independent);
+  return val;
+}

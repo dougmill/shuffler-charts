@@ -14,7 +14,11 @@ class StatsType extends EnumClass {
   static const StatsType handLands = _$handLands;
   static const StatsType libraryLands = _$libraryLands;
   static const StatsType cardPositions = _$cardPositions;
+  static const StatsType cardPositionsIndependent = _$cardPositionsIndependent;
   static const StatsType cardCopies = _$cardCopies;
+
+  bool get isByPosition =>
+      this == cardPositions || this == cardPositionsIndependent;
 
   const StatsType._(String name) : super(name);
 
@@ -78,6 +82,8 @@ abstract class FetchParameters
   int get deckSize;
   @nullable
   int get numCards;
+  @nullable
+  bool get independent;
 
   String toQueryString() {
     switch (type) {
@@ -85,28 +91,40 @@ abstract class FetchParameters
       case StatsType.cardCopies:
         return 'type=${type.name}';
       case StatsType.libraryLands:
+        return 'type=${type.name}&deckSize=$deckSize&landsInDeck=$numCards';
       case StatsType.cardPositions:
-        return 'type=${type.name}&deckSize=$deckSize&numCards=$numCards';
+        return 'type=${type.name}&deckSize=$deckSize&numCards=$numCards&independent=$independent';
       default:
         throw AssertionError();
     }
   }
 
   factory FetchParameters.from(Parameters params) {
-    var builder = FetchParametersBuilder()..type = params.type.value;
-    switch (params.type.value) {
-      case StatsType.handLands:
-      case StatsType.cardCopies:
-        return builder.build();
-      case StatsType.libraryLands:
-      case StatsType.cardPositions:
-        return (builder
-              ..deckSize = params.deckSize.value
-              ..numCards = params.numCards.value)
-            .build();
-      default:
-        throw AssertionError();
-    }
+    return FetchParameters((b) {
+      switch (params.type.value) {
+        case StatsType.handLands:
+        case StatsType.cardCopies:
+          b.type = params.type.value;
+          break;
+        case StatsType.libraryLands:
+          b
+            ..type = params.type.value
+            ..deckSize = params.deckSize.value
+            ..numCards = params.numCards.value;
+          break;
+        case StatsType.cardPositions:
+        case StatsType.cardPositionsIndependent:
+          b
+            ..type = StatsType.cardPositions
+            ..deckSize = params.deckSize.value
+            ..numCards = params.numCards.value
+            ..independent =
+                params.type.value == StatsType.cardPositionsIndependent;
+          break;
+        default:
+          throw AssertionError();
+      }
+    });
   }
 
   FetchParameters._();
@@ -215,6 +233,7 @@ const numDrawnLabels = {
   StatsType.handLands: 'Lands drawn',
   StatsType.libraryLands: 'Lands in library',
   StatsType.cardPositions: 'Relevant cards drawn',
+  StatsType.cardPositionsIndependent: 'Relevant cards drawn',
   StatsType.cardCopies: 'Copies drawn'
 };
 
@@ -233,7 +252,7 @@ List<Option<String>> _getCommonAxisOptions(StatsType type) {
       Option.of('landsInHand', 'Lands in opening hand'),
     if (type == StatsType.libraryLands)
       Option.of('libraryPosition', 'Card position in library'),
-    if (type == StatsType.cardPositions)
+    if (type.isByPosition)
       Option.of('decklistPosition', 'Card position in decklist'),
     Option.of('week', 'Week')
   ];
@@ -285,6 +304,8 @@ String _weekLabel(int i) {
       ' - ${_months[endOfWeek.month]} ${endOfWeek.day}';
 }
 
+typedef dummySetter<T> = void Function(ParameterBuilder<T> p);
+
 void initialize(ParametersBuilder b) {
   b.type = Parameter((p) => p
     ..type = ParameterType.selection
@@ -294,6 +315,8 @@ void initialize(ParametersBuilder b) {
       Option.of(StatsType.handLands, 'Lands in opening hand'),
       Option.of(StatsType.libraryLands, 'Lands in library'),
       Option.of(StatsType.cardPositions, 'Cards by position in decklist'),
+      Option.of(
+          StatsType.cardPositionsIndependent, 'Cards by position, bucketed'),
       Option.of(StatsType.cardCopies, 'Cards by number of copies')
     ])
     ..multiSelections = BuiltList());
@@ -417,8 +440,13 @@ void initialize(ParametersBuilder b) {
       ..multiSelections = BuiltList();
   }
 
+  dummySetter dummyWithValue<T>(T value) => (p) {
+        dummyParam(p);
+        p.value = value;
+      };
+
   var dummy = Parameters((p) => p
-    ..type = Parameter(dummyParam)
+    ..type = Parameter(dummyWithValue(StatsType.cardPositions))
     ..xAxis = Parameter(dummyParam)
     ..breakdownBy = Parameter(dummyParam)
     ..options = Parameter(dummyParam)
@@ -443,13 +471,13 @@ void validate(Parameters old, ParametersBuilder updated) {
 
   StatsType type = updated.type.value;
   if (old.type.value != type) {
-    if (type == StatsType.cardPositions) {
+    if (type.isByPosition && !old.type.value.isByPosition) {
       updated.options = updated.options.rebuild((p) => p.options = p.options
           .rebuild((lo) => lo.insert(
               2,
               Option.of(
                   DisplayOption.bugged, 'Show prediction for bug', true))));
-    } else if (old.type.value == StatsType.cardPositions) {
+    } else if (!type.isByPosition && old.type.value.isByPosition) {
       updated.options = updated.options.rebuild(
           (p) => p.options = p.options.rebuild((lo) => lo.removeAt(2)));
     }
@@ -458,7 +486,7 @@ void validate(Parameters old, ParametersBuilder updated) {
           ..._getCommonAxisOptions(type),
           Option.of(DisplayOption.actual, 'Actual values'),
           Option.of(DisplayOption.expected, 'Expected values'),
-          if (type == StatsType.cardPositions)
+          if (type.isByPosition)
             Option.of(DisplayOption.bugged, 'Predicted values for bug'),
           Option.of(DisplayOption.sampleSize, 'Sample sizes')
         ]));
@@ -590,7 +618,10 @@ void validate(Parameters old, ParametersBuilder updated) {
           .contains(type)) ...[
         if (updated.deckSize.value != 40) ..._range(10, 13),
         ..._range(14, 20),
-        if (updated.deckSize.value != 40) ..._range(21, 28)
+        if (updated.deckSize.value != 40)
+          ..._range(21, 28)
+        // cardPositionsIndependent does not do estimations, so check for
+        // cardPositions only, not type.isByPosition
       ] else if (type == StatsType.cardPositions) ...[
         Option.of(0, 'Estimate for every card'),
         ..._range(1, 4),
@@ -678,7 +709,7 @@ void validate(Parameters old, ParametersBuilder updated) {
     if (type == StatsType.libraryLands)
       (updated.numCards.value ?? 25) -
           (firstSelected(updated.landsInHand) ?? 0),
-    if (type == StatsType.cardPositions) max(updated.numCards.value ?? 25, 1),
+    if (type.isByPosition) max(updated.numCards.value ?? 25, 1),
     if (type == StatsType.cardCopies) lastSelected(updated.numCards) ?? 4
   ].reduce(min);
   updated.numDrawn = updated.numDrawn.rebuild((builder) {
@@ -702,7 +733,7 @@ void validate(Parameters old, ParametersBuilder updated) {
   updated.libraryPosition = updated.libraryPosition
       .rebuild(paramUpdater(old.libraryPosition, newOptions));
 
-  if (type == StatsType.cardPositions) {
+  if (type.isByPosition) {
     int minBlockSize = max(updated.numCards.value ?? 1, 1);
     newOptions = _builtRange(0, updated.deckSize.value - minBlockSize,
         labelFunc: (i) => i + 1);

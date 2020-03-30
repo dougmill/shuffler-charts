@@ -9,6 +9,8 @@ part of 'parameters.dart';
 const StatsType _$handLands = const StatsType._('handLands');
 const StatsType _$libraryLands = const StatsType._('libraryLands');
 const StatsType _$cardPositions = const StatsType._('cardPositions');
+const StatsType _$cardPositionsIndependent =
+    const StatsType._('cardPositionsIndependent');
 const StatsType _$cardCopies = const StatsType._('cardCopies');
 
 StatsType _$statsTypeValueOf(String name) {
@@ -19,6 +21,8 @@ StatsType _$statsTypeValueOf(String name) {
       return _$libraryLands;
     case 'cardPositions':
       return _$cardPositions;
+    case 'cardPositionsIndependent':
+      return _$cardPositionsIndependent;
     case 'cardCopies':
       return _$cardCopies;
     default:
@@ -31,6 +35,7 @@ final BuiltSet<StatsType> _$statsTypeValues =
   _$handLands,
   _$libraryLands,
   _$cardPositions,
+  _$cardPositionsIndependent,
   _$cardCopies,
 ]);
 
@@ -169,11 +174,15 @@ class _$FetchParameters extends FetchParameters {
   final int deckSize;
   @override
   final int numCards;
+  @override
+  final bool independent;
 
   factory _$FetchParameters([void Function(FetchParametersBuilder) updates]) =>
       (new FetchParametersBuilder()..update(updates)).build();
 
-  _$FetchParameters._({this.type, this.deckSize, this.numCards}) : super._() {
+  _$FetchParameters._(
+      {this.type, this.deckSize, this.numCards, this.independent})
+      : super._() {
     if (type == null) {
       throw new BuiltValueNullFieldError('FetchParameters', 'type');
     }
@@ -193,13 +202,15 @@ class _$FetchParameters extends FetchParameters {
     return other is FetchParameters &&
         type == other.type &&
         deckSize == other.deckSize &&
-        numCards == other.numCards;
+        numCards == other.numCards &&
+        independent == other.independent;
   }
 
   @override
   int get hashCode {
-    return $jf(
-        $jc($jc($jc(0, type.hashCode), deckSize.hashCode), numCards.hashCode));
+    return $jf($jc(
+        $jc($jc($jc(0, type.hashCode), deckSize.hashCode), numCards.hashCode),
+        independent.hashCode));
   }
 
   @override
@@ -207,7 +218,8 @@ class _$FetchParameters extends FetchParameters {
     return (newBuiltValueToStringHelper('FetchParameters')
           ..add('type', type)
           ..add('deckSize', deckSize)
-          ..add('numCards', numCards))
+          ..add('numCards', numCards)
+          ..add('independent', independent))
         .toString();
   }
 }
@@ -228,6 +240,10 @@ class FetchParametersBuilder
   int get numCards => _$this._numCards;
   set numCards(int numCards) => _$this._numCards = numCards;
 
+  bool _independent;
+  bool get independent => _$this._independent;
+  set independent(bool independent) => _$this._independent = independent;
+
   FetchParametersBuilder();
 
   FetchParametersBuilder get _$this {
@@ -235,6 +251,7 @@ class FetchParametersBuilder
       _type = _$v.type;
       _deckSize = _$v.deckSize;
       _numCards = _$v.numCards;
+      _independent = _$v.independent;
       _$v = null;
     }
     return this;
@@ -257,7 +274,10 @@ class FetchParametersBuilder
   _$FetchParameters build() {
     final _$result = _$v ??
         new _$FetchParameters._(
-            type: type, deckSize: deckSize, numCards: numCards);
+            type: type,
+            deckSize: deckSize,
+            numCards: numCards,
+            independent: independent);
     replace(_$result);
     return _$result;
   }
@@ -926,6 +946,7 @@ class OptionBuilder<T> implements Builder<Option<T>, OptionBuilder<T>> {
 
 Map<String, dynamic> _$StatsTypeToJson(StatsType instance) => <String, dynamic>{
       'name': instance.name,
+      'isByPosition': instance.isByPosition,
     };
 
 Map<String, dynamic> _$DisplayOptionToJson(DisplayOption instance) =>

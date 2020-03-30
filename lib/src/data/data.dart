@@ -19,17 +19,24 @@ Serializers dataSerializers = (_$dataSerializers.toBuilder()
       ..addPlugin(StandardJsonPlugin()))
     .build();
 
-@JsonSerializable(createFactory: false)
+@JsonSerializable(createFactory: false, includeIfNull: false)
 abstract class Group implements Built<Group, GroupBuilder> {
   static Serializer<Group> get serializer => _$groupSerializer;
 
   int get deckSize;
   int get numCards;
+  @nullable
+  @JsonKey(ignore: true)
+  int get landsInDeck;
   int get bestOf;
   Shuffling get shuffling;
   MulliganType get mulliganType;
   int get week;
   StatsType get type;
+  @nullable
+  bool get independent;
+
+  static void _finalizeBuilder(GroupBuilder b) => b.numCards ??= b.landsInDeck;
 
   @JsonKey(ignore: true)
   @memoized
