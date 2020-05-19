@@ -27,11 +27,24 @@ class StatsType extends EnumClass {
 }
 
 @JsonSerializable(createFactory: false)
+class YAxis extends EnumClass {
+  static Serializer<YAxis> get serializer => _$yAxisSerializer;
+
+  static const YAxis percentage = _$percentage;
+  static const YAxis count = _$count;
+  static const YAxis average = _$average;
+
+  const YAxis._(String name) : super(name);
+
+  static BuiltSet<YAxis> get values => _$yAxisValues;
+  static YAxis valueOf(String name) => _$yAxisValueOf(name);
+}
+
+@JsonSerializable(createFactory: false)
 class DisplayOption extends EnumClass {
   static const DisplayOption actual = _$actual;
   static const DisplayOption expected = _$expected;
   static const DisplayOption bugged = _$bugged;
-  static const DisplayOption count = _$count;
   static const DisplayOption sampleSize = _$sampleSize;
 
   const DisplayOption._(String name) : super(name);
@@ -138,6 +151,7 @@ abstract class FetchParameters
 abstract class Parameters implements Built<Parameters, ParametersBuilder> {
   Parameter<StatsType> get type;
   Parameter<Object> get xAxis;
+  Parameter<YAxis> get yAxis;
   Parameter<String> get breakdownBy;
   Parameter<DisplayOption> get options;
   Parameter<int> get deckSize;
@@ -170,6 +184,7 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
       _$Parameters._(
           type: map['type'],
           xAxis: map['xAxis'],
+          yAxis: map['yAxis'],
           breakdownBy: map['breakdownBy'],
           options: map['options'],
           deckSize: map['deckSize'],
@@ -238,7 +253,7 @@ const numDrawnLabels = {
   StatsType.cardCopies: 'Copies drawn'
 };
 
-List<Option<String>> _getCommonAxisOptions(StatsType type) {
+List<Option<String>> _getInputSelectOptions(StatsType type, YAxis yAxis) {
   return [
     if ((const [StatsType.handLands, StatsType.cardCopies]).contains(type))
       Option.of('deckSize', 'Cards in deck'),
@@ -247,7 +262,7 @@ List<Option<String>> _getCommonAxisOptions(StatsType type) {
     Option.of('shuffling', 'Shuffling'),
     Option.of('mulliganType', 'Mulligan type'),
     Option.of('mulligans', 'Mulligans'),
-    Option.of('numDrawn', numDrawnLabels[type]),
+    if (yAxis != YAxis.average) Option.of('numDrawn', numDrawnLabels[type]),
     if (type == StatsType.libraryLands)
       Option.of('landsInHand', 'Lands in opening hand'),
     if (type == StatsType.libraryLands)
@@ -328,6 +343,17 @@ void initialize(ParametersBuilder b) {
     ..options = BuiltList()
     ..multiSelections = BuiltList());
 
+  b.yAxis = Parameter((p) => p
+    ..type = ParameterType.selection
+    ..name = 'Y axis'
+    ..value = YAxis.percentage
+    ..options = BuiltList([
+      Option.of(YAxis.percentage, 'Percentage of sample'),
+      Option.of(YAxis.count, 'Count of games'),
+      Option.of(YAxis.average, 'Average')
+    ])
+    ..multiSelections = BuiltList());
+
   b.breakdownBy = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Breakdown by'
@@ -342,7 +368,6 @@ void initialize(ParametersBuilder b) {
       Option.of(DisplayOption.actual, 'Show actual values', true),
       Option.of(DisplayOption.expected, 'Show expected values', true),
       Option.of(DisplayOption.bugged, 'Show prediction for bug', true),
-      Option.of(DisplayOption.count, 'Show values by count', false),
       Option.of(DisplayOption.sampleSize, 'Show sample sizes', false)
     ])
     ..multiSelections = BuiltList());
@@ -450,6 +475,7 @@ void initialize(ParametersBuilder b) {
   var dummy = Parameters((p) => p
     ..type = Parameter(dummyWithValue(StatsType.handLands))
     ..xAxis = Parameter(dummyParam)
+    ..yAxis = Parameter(dummyParam)
     ..breakdownBy = Parameter(dummyParam)
     ..options = Parameter(dummyParam)
     ..deckSize = Parameter(dummyParam)
@@ -485,7 +511,7 @@ void validate(Parameters old, ParametersBuilder updated) {
     }
 
     updated.xAxis = updated.xAxis.rebuild((b) => b.options = BuiltList([
-          ..._getCommonAxisOptions(type),
+          ..._getInputSelectOptions(type, updated.yAxis.value),
           Option.of(DisplayOption.actual, 'Actual values'),
           Option.of(DisplayOption.expected, 'Expected values'),
           if (type.isByPosition)
@@ -493,7 +519,10 @@ void validate(Parameters old, ParametersBuilder updated) {
           Option.of(DisplayOption.sampleSize, 'Sample sizes')
         ]));
     updated.breakdownBy = updated.breakdownBy.rebuild((p) => p.options =
-        BuiltList([Option.of('none', 'None'), ..._getCommonAxisOptions(type)]));
+            BuiltList([
+          Option.of('none', 'None'),
+          ..._getInputSelectOptions(type, updated.yAxis.value)
+        ]));
   }
 
   void Function(ParameterBuilder<T>) errorSetter<T>(String error) {
@@ -526,10 +555,7 @@ void validate(Parameters old, ParametersBuilder updated) {
   updated.breakdownBy = updated.breakdownBy
       .rebuild(errorSetter(findAxisError(updated.breakdownBy)));
 
-  error = updated.options.options
-          .any((o) => o.selected && o.value != DisplayOption.count)
-      ? null
-      : unsetError;
+  error = updated.options.options.any((o) => o.selected) ? null : unsetError;
   updated.options = updated.options.rebuild(errorSetter(error));
 
   void Function(ParameterBuilder<T>) optionsSetter<T>(
@@ -683,21 +709,26 @@ void validate(Parameters old, ParametersBuilder updated) {
     return p.options.lastWhere((o) => o.selected, orElse: () => null)?.value;
   }
 
-  int maxPossibleDrawn = [
-    if (type == StatsType.libraryLands)
-      (lastSelected(updated.libraryPosition) ?? 9) + 1
-    else if (isValueSelected(updated.mulliganType, MulliganType.london))
-      7
-    else
-      7 - (firstSelected(updated.mulligans) ?? 0),
-    if (type == StatsType.libraryLands)
-      (updated.numCards.value ?? 25) -
-          (firstSelected(updated.landsInHand) ?? 0),
-    if (type.isByPosition) max(updated.numCards.value ?? 25, 1),
-    if (type == StatsType.cardCopies) lastSelected(updated.numCards) ?? 4
-  ].reduce(min);
+  if (updated.yAxis.value == YAxis.average) {
+    newOptions = BuiltList();
+  } else {
+    int maxPossibleDrawn = [
+      if (type == StatsType.libraryLands)
+        (lastSelected(updated.libraryPosition) ?? 9) + 1
+      else if (isValueSelected(updated.mulliganType, MulliganType.london))
+        7
+      else
+        7 - (firstSelected(updated.mulligans) ?? 0),
+      if (type == StatsType.libraryLands)
+        (updated.numCards.value ?? 25) -
+            (firstSelected(updated.landsInHand) ?? 0),
+      if (type.isByPosition) max(updated.numCards.value ?? 25, 1),
+      if (type == StatsType.cardCopies) lastSelected(updated.numCards) ?? 4
+    ].reduce(min);
+    newOptions = _builtRange(0, maxPossibleDrawn);
+  }
   updated.numDrawn = updated.numDrawn.rebuild((builder) {
-    paramUpdater(old.numDrawn, _builtRange(0, maxPossibleDrawn))(builder);
+    paramUpdater(old.numDrawn, newOptions)(builder);
     builder.name = numDrawnLabels[type];
   });
 

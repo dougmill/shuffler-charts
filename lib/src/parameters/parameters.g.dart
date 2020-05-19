@@ -39,10 +39,32 @@ final BuiltSet<StatsType> _$statsTypeValues =
   _$cardCopies,
 ]);
 
+const YAxis _$percentage = const YAxis._('percentage');
+const YAxis _$count = const YAxis._('count');
+const YAxis _$average = const YAxis._('average');
+
+YAxis _$yAxisValueOf(String name) {
+  switch (name) {
+    case 'percentage':
+      return _$percentage;
+    case 'count':
+      return _$count;
+    case 'average':
+      return _$average;
+    default:
+      throw new ArgumentError(name);
+  }
+}
+
+final BuiltSet<YAxis> _$yAxisValues = new BuiltSet<YAxis>(const <YAxis>[
+  _$percentage,
+  _$count,
+  _$average,
+]);
+
 const DisplayOption _$actual = const DisplayOption._('actual');
 const DisplayOption _$expected = const DisplayOption._('expected');
 const DisplayOption _$bugged = const DisplayOption._('bugged');
-const DisplayOption _$count = const DisplayOption._('count');
 const DisplayOption _$sampleSize = const DisplayOption._('sampleSize');
 
 DisplayOption _$displayOptionValueOf(String name) {
@@ -53,8 +75,6 @@ DisplayOption _$displayOptionValueOf(String name) {
       return _$expected;
     case 'bugged':
       return _$bugged;
-    case 'count':
-      return _$count;
     case 'sampleSize':
       return _$sampleSize;
     default:
@@ -67,17 +87,19 @@ final BuiltSet<DisplayOption> _$displayOptionValues =
   _$actual,
   _$expected,
   _$bugged,
-  _$count,
   _$sampleSize,
 ]);
 
 const Shuffling _$normal = const Shuffling._('normal');
+const Shuffling _$hand = const Shuffling._('hand');
 const Shuffling _$smoothed = const Shuffling._('smoothed');
 
 Shuffling _$shufflingValueOf(String name) {
   switch (name) {
     case 'normal':
       return _$normal;
+    case 'hand':
+      return _$hand;
     case 'smoothed':
       return _$smoothed;
     default:
@@ -88,6 +110,7 @@ Shuffling _$shufflingValueOf(String name) {
 final BuiltSet<Shuffling> _$shufflingValues =
     new BuiltSet<Shuffling>(const <Shuffling>[
   _$normal,
+  _$hand,
   _$smoothed,
 ]);
 
@@ -112,6 +135,7 @@ final BuiltSet<MulliganType> _$mulliganTypeValues =
 ]);
 
 Serializer<StatsType> _$statsTypeSerializer = new _$StatsTypeSerializer();
+Serializer<YAxis> _$yAxisSerializer = new _$YAxisSerializer();
 Serializer<Shuffling> _$shufflingSerializer = new _$ShufflingSerializer();
 Serializer<MulliganType> _$mulliganTypeSerializer =
     new _$MulliganTypeSerializer();
@@ -131,6 +155,23 @@ class _$StatsTypeSerializer implements PrimitiveSerializer<StatsType> {
   StatsType deserialize(Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       StatsType.valueOf(serialized as String);
+}
+
+class _$YAxisSerializer implements PrimitiveSerializer<YAxis> {
+  @override
+  final Iterable<Type> types = const <Type>[YAxis];
+  @override
+  final String wireName = 'YAxis';
+
+  @override
+  Object serialize(Serializers serializers, YAxis object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      object.name;
+
+  @override
+  YAxis deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      YAxis.valueOf(serialized as String);
 }
 
 class _$ShufflingSerializer implements PrimitiveSerializer<Shuffling> {
@@ -289,6 +330,8 @@ class _$Parameters extends Parameters {
   @override
   final Parameter<Object> xAxis;
   @override
+  final Parameter<YAxis> yAxis;
+  @override
   final Parameter<String> breakdownBy;
   @override
   final Parameter<DisplayOption> options;
@@ -296,8 +339,6 @@ class _$Parameters extends Parameters {
   final Parameter<int> deckSize;
   @override
   final Parameter<int> numCards;
-  @override
-  final Parameter<int> bestOf;
   @override
   final Parameter<Shuffling> shuffling;
   @override
@@ -311,6 +352,8 @@ class _$Parameters extends Parameters {
   @override
   final Parameter<int> libraryPosition;
   @override
+  final Parameter<int> known;
+  @override
   final Parameter<int> decklistPosition;
   @override
   final Parameter<int> week;
@@ -323,17 +366,18 @@ class _$Parameters extends Parameters {
   _$Parameters._(
       {this.type,
       this.xAxis,
+      this.yAxis,
       this.breakdownBy,
       this.options,
       this.deckSize,
       this.numCards,
-      this.bestOf,
       this.shuffling,
       this.mulliganType,
       this.mulligans,
       this.numDrawn,
       this.landsInHand,
       this.libraryPosition,
+      this.known,
       this.decklistPosition,
       this.week})
       : super._() {
@@ -342,6 +386,9 @@ class _$Parameters extends Parameters {
     }
     if (xAxis == null) {
       throw new BuiltValueNullFieldError('Parameters', 'xAxis');
+    }
+    if (yAxis == null) {
+      throw new BuiltValueNullFieldError('Parameters', 'yAxis');
     }
     if (breakdownBy == null) {
       throw new BuiltValueNullFieldError('Parameters', 'breakdownBy');
@@ -354,9 +401,6 @@ class _$Parameters extends Parameters {
     }
     if (numCards == null) {
       throw new BuiltValueNullFieldError('Parameters', 'numCards');
-    }
-    if (bestOf == null) {
-      throw new BuiltValueNullFieldError('Parameters', 'bestOf');
     }
     if (shuffling == null) {
       throw new BuiltValueNullFieldError('Parameters', 'shuffling');
@@ -375,6 +419,9 @@ class _$Parameters extends Parameters {
     }
     if (libraryPosition == null) {
       throw new BuiltValueNullFieldError('Parameters', 'libraryPosition');
+    }
+    if (known == null) {
+      throw new BuiltValueNullFieldError('Parameters', 'known');
     }
     if (decklistPosition == null) {
       throw new BuiltValueNullFieldError('Parameters', 'decklistPosition');
@@ -403,17 +450,18 @@ class _$Parameters extends Parameters {
     return other is Parameters &&
         type == other.type &&
         xAxis == other.xAxis &&
+        yAxis == other.yAxis &&
         breakdownBy == other.breakdownBy &&
         options == other.options &&
         deckSize == other.deckSize &&
         numCards == other.numCards &&
-        bestOf == other.bestOf &&
         shuffling == other.shuffling &&
         mulliganType == other.mulliganType &&
         mulligans == other.mulligans &&
         numDrawn == other.numDrawn &&
         landsInHand == other.landsInHand &&
         libraryPosition == other.libraryPosition &&
+        known == other.known &&
         decklistPosition == other.decklistPosition &&
         week == other.week;
   }
@@ -434,20 +482,22 @@ class _$Parameters extends Parameters {
                                                 $jc(
                                                     $jc(
                                                         $jc(
-                                                            $jc(0,
-                                                                type.hashCode),
-                                                            xAxis.hashCode),
+                                                            $jc(
+                                                                $jc(0,
+                                                                    type.hashCode),
+                                                                xAxis.hashCode),
+                                                            yAxis.hashCode),
                                                         breakdownBy.hashCode),
                                                     options.hashCode),
                                                 deckSize.hashCode),
                                             numCards.hashCode),
-                                        bestOf.hashCode),
-                                    shuffling.hashCode),
-                                mulliganType.hashCode),
-                            mulligans.hashCode),
-                        numDrawn.hashCode),
-                    landsInHand.hashCode),
-                libraryPosition.hashCode),
+                                        shuffling.hashCode),
+                                    mulliganType.hashCode),
+                                mulligans.hashCode),
+                            numDrawn.hashCode),
+                        landsInHand.hashCode),
+                    libraryPosition.hashCode),
+                known.hashCode),
             decklistPosition.hashCode),
         week.hashCode));
   }
@@ -457,17 +507,18 @@ class _$Parameters extends Parameters {
     return (newBuiltValueToStringHelper('Parameters')
           ..add('type', type)
           ..add('xAxis', xAxis)
+          ..add('yAxis', yAxis)
           ..add('breakdownBy', breakdownBy)
           ..add('options', options)
           ..add('deckSize', deckSize)
           ..add('numCards', numCards)
-          ..add('bestOf', bestOf)
           ..add('shuffling', shuffling)
           ..add('mulliganType', mulliganType)
           ..add('mulligans', mulligans)
           ..add('numDrawn', numDrawn)
           ..add('landsInHand', landsInHand)
           ..add('libraryPosition', libraryPosition)
+          ..add('known', known)
           ..add('decklistPosition', decklistPosition)
           ..add('week', week))
         .toString();
@@ -490,6 +541,13 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
   Parameter<Object> get xAxis => _$this._xAxis;
   set xAxis(Parameter<Object> xAxis) {
     _$this._xAxis = xAxis;
+    onSet();
+  }
+
+  Parameter<YAxis> _yAxis;
+  Parameter<YAxis> get yAxis => _$this._yAxis;
+  set yAxis(Parameter<YAxis> yAxis) {
+    _$this._yAxis = yAxis;
     onSet();
   }
 
@@ -518,13 +576,6 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
   Parameter<int> get numCards => _$this._numCards;
   set numCards(Parameter<int> numCards) {
     _$this._numCards = numCards;
-    onSet();
-  }
-
-  Parameter<int> _bestOf;
-  Parameter<int> get bestOf => _$this._bestOf;
-  set bestOf(Parameter<int> bestOf) {
-    _$this._bestOf = bestOf;
     onSet();
   }
 
@@ -570,6 +621,13 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
     onSet();
   }
 
+  Parameter<int> _known;
+  Parameter<int> get known => _$this._known;
+  set known(Parameter<int> known) {
+    _$this._known = known;
+    onSet();
+  }
+
   Parameter<int> _decklistPosition;
   Parameter<int> get decklistPosition => _$this._decklistPosition;
   set decklistPosition(Parameter<int> decklistPosition) {
@@ -590,17 +648,18 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
     if (_$v != null) {
       _type = _$v.type;
       _xAxis = _$v.xAxis;
+      _yAxis = _$v.yAxis;
       _breakdownBy = _$v.breakdownBy;
       _options = _$v.options;
       _deckSize = _$v.deckSize;
       _numCards = _$v.numCards;
-      _bestOf = _$v.bestOf;
       _shuffling = _$v.shuffling;
       _mulliganType = _$v.mulliganType;
       _mulligans = _$v.mulligans;
       _numDrawn = _$v.numDrawn;
       _landsInHand = _$v.landsInHand;
       _libraryPosition = _$v.libraryPosition;
+      _known = _$v.known;
       _decklistPosition = _$v.decklistPosition;
       _week = _$v.week;
       _$v = null;
@@ -627,17 +686,18 @@ class ParametersBuilder implements Builder<Parameters, ParametersBuilder> {
         new _$Parameters._(
             type: type,
             xAxis: xAxis,
+            yAxis: yAxis,
             breakdownBy: breakdownBy,
             options: options,
             deckSize: deckSize,
             numCards: numCards,
-            bestOf: bestOf,
             shuffling: shuffling,
             mulliganType: mulliganType,
             mulligans: mulligans,
             numDrawn: numDrawn,
             landsInHand: landsInHand,
             libraryPosition: libraryPosition,
+            known: known,
             decklistPosition: decklistPosition,
             week: week);
     replace(_$result);
@@ -949,6 +1009,10 @@ Map<String, dynamic> _$StatsTypeToJson(StatsType instance) => <String, dynamic>{
       'isByPosition': instance.isByPosition,
     };
 
+Map<String, dynamic> _$YAxisToJson(YAxis instance) => <String, dynamic>{
+      'name': instance.name,
+    };
+
 Map<String, dynamic> _$DisplayOptionToJson(DisplayOption instance) =>
     <String, dynamic>{
       'name': instance.name,
@@ -968,17 +1032,18 @@ Map<String, dynamic> _$ParametersToJson(Parameters instance) =>
     <String, dynamic>{
       'type': instance.type,
       'xAxis': instance.xAxis,
+      'yAxis': instance.yAxis,
       'breakdownBy': instance.breakdownBy,
       'options': instance.options,
       'deckSize': instance.deckSize,
       'numCards': instance.numCards,
-      'bestOf': instance.bestOf,
       'shuffling': instance.shuffling,
       'mulliganType': instance.mulliganType,
       'mulligans': instance.mulligans,
       'numDrawn': instance.numDrawn,
       'landsInHand': instance.landsInHand,
       'libraryPosition': instance.libraryPosition,
+      'known': instance.known,
       'decklistPosition': instance.decklistPosition,
       'week': instance.week,
     };

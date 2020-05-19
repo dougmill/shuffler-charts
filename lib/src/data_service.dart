@@ -164,23 +164,22 @@ class DataService {
               : const <double>[];
           for (int i = 0; i < list.length; i++) {
             maybeSetKey(indexName, i);
-            if (!paramValuesMap[indexName].contains(i)) {
+            if (params.yAxis.value != YAxis.average &&
+                !paramValuesMap[indexName].contains(i)) {
               continue;
             }
-            if (options[DisplayOption.sampleSize] ||
-                !options[DisplayOption.count]) {
-              addToStat(DisplayOption.sampleSize, sampleSize);
-            }
+            addToStat(DisplayOption.sampleSize, sampleSize);
+            int multiplier = params.yAxis.value == YAxis.average ? i : 1;
             if (options[DisplayOption.actual]) {
-              addToStat(DisplayOption.actual, list[i]);
+              addToStat(DisplayOption.actual, list[i] * multiplier);
             }
             if (options[DisplayOption.expected]) {
-              addToStat(
-                  DisplayOption.expected, expectedDistribution[i] * sampleSize);
+              addToStat(DisplayOption.expected,
+                  expectedDistribution[i] * sampleSize * multiplier);
             }
             if (options[DisplayOption.bugged]) {
-              addToStat(
-                  DisplayOption.bugged, buggedDistribution[i] * sampleSize);
+              addToStat(DisplayOption.bugged,
+                  buggedDistribution[i] * sampleSize * multiplier);
             }
           }
         } else {
@@ -206,7 +205,7 @@ class DataService {
       ..progress = 1);
     await _runEventLoop();
 
-    if (!options[DisplayOption.count]) {
+    if (params.yAxis.value != YAxis.count) {
       var sampleSizes = statsBuilder[DisplayOption.sampleSize];
       statsBuilder.remove(DisplayOption.sampleSize);
       statsBuilder.forEach((displayOption, breakdownBuilder) =>

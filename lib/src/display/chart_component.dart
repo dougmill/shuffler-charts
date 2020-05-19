@@ -52,9 +52,10 @@ class ChartComponent implements OnInit {
       return;
     }
     List<Object> breakdownValues;
-    bool showCounts = _params.options.options
-        .firstWhere((o) => o.value == DisplayOption.count)
-        .selected;
+    var yAxis = _params.yAxis.value;
+    String capitalize(String str) {
+      return str[0].toUpperCase() + str.substring(1);
+    }
 
     if (state.value.lineStats != null) {
       var stats = state.value.lineStats;
@@ -79,7 +80,8 @@ class ChartComponent implements OnInit {
                 for (var x in xValues) x.toString()
               ], datasets: [
                 for (var option in stats.keys)
-                  if (option != DisplayOption.sampleSize || showCounts)
+                  if (option != DisplayOption.sampleSize ||
+                      yAxis == YAxis.count)
                     for (var breakdown in breakdownValues)
                       ChartDataSets(
                           data: [
@@ -94,15 +96,25 @@ class ChartComponent implements OnInit {
                           pointBorderColor: lineColor(option, breakdown))
               ]),
               options: ChartOptions(
-                  title: ChartTitleOptions(display: true, text: [
-                    (showCounts ? 'Count' : 'Percent') +
-                        ' of games with selected ' +
-                        _params.numDrawn.name.toLowerCase(),
-                    'vs ' + _params.xAxis.value.toString(),
-                    'Out of those matching selected parameters',
-                    if (_params.breakdownBy.value != 'none')
-                      'Broken down by ' + _params.breakdownBy.value
-                  ]),
+                  title: ChartTitleOptions(
+                      display: true,
+                      text: yAxis == YAxis.average
+                          ? [
+                              'Average ' + _params.numDrawn.name.toLowerCase(),
+                              'vs ' + _params.xAxis.value.toString(),
+                              'In games matching selected parameters',
+                              if (_params.breakdownBy.value != 'none')
+                                'Broken down by ' + _params.breakdownBy.value
+                            ]
+                          : [
+                              capitalize(yAxis.name) +
+                                  ' of games with selected ' +
+                                  _params.numDrawn.name.toLowerCase(),
+                              'vs ' + _params.xAxis.value.toString(),
+                              'Out of those matching selected parameters',
+                              if (_params.breakdownBy.value != 'none')
+                                'Broken down by ' + _params.breakdownBy.value
+                            ]),
                   scales: ChartScales(xAxes: [
                     ChartXAxe(
                         type: 'category',
@@ -115,9 +127,11 @@ class ChartComponent implements OnInit {
                         ticks: TickOptions(beginAtZero: true, min: 0),
                         scaleLabel: ScaleTitleOptions(
                             display: true,
-                            labelString: showCounts
-                                ? 'Number of games'
-                                : 'Fraction of games'))
+                            labelString: yAxis == YAxis.average
+                                ? 'Average ' + _params.numDrawn.name
+                                : yAxis == YAxis.count
+                                    ? 'Number of games'
+                                    : 'Fraction of games'))
                   ]),
                   elements:
                       ChartElementsOptions(line: ChartLineOptions(tension: 0)),
@@ -136,7 +150,7 @@ class ChartComponent implements OnInit {
       String yTitle = stats.keys
           .where((o) =>
               o != _params.xAxis.value &&
-              (showCounts || o != DisplayOption.sampleSize))
+              (yAxis == YAxis.count || o != DisplayOption.sampleSize))
           .map((o) => o.label)
           .join(' and ');
 
@@ -146,7 +160,8 @@ class ChartComponent implements OnInit {
               type: 'scatter',
               data: LinearChartData(datasets: [
                 for (var option in stats.keys)
-                  if ((option != DisplayOption.sampleSize || showCounts) &&
+                  if ((option != DisplayOption.sampleSize ||
+                          yAxis == YAxis.count) &&
                       option != _params.xAxis.value)
                     ChartDataSets(
                         data: [
@@ -160,13 +175,25 @@ class ChartComponent implements OnInit {
                         pointBorderColor: pointColor(option))
               ]),
               options: ChartOptions(
-                  title: ChartTitleOptions(display: true, text: [
-                    (showCounts ? 'Count' : 'Percent') +
-                        ' of games with selected ' +
-                        _params.numDrawn.name.toLowerCase(),
-                    yTitle + ' vs ' + _params.xAxis.value.toString(),
-                    'Out of those matching selected parameters'
-                  ]),
+                  title: ChartTitleOptions(
+                      display: true,
+                      text: yAxis == YAxis.average
+                          ? [
+                              'Average ' + _params.numDrawn.name.toLowerCase(),
+                              'vs ' + _params.xAxis.value.toString(),
+                              'In games matching selected parameters',
+                              if (_params.breakdownBy.value != 'none')
+                                'Broken down by ' + _params.breakdownBy.value
+                            ]
+                          : [
+                              capitalize(yAxis.name) +
+                                  ' of games with selected ' +
+                                  _params.numDrawn.name.toLowerCase(),
+                              yTitle + ' vs ' + _params.xAxis.value.toString(),
+                              'Out of those matching selected parameters',
+                              if (_params.breakdownBy.value != 'none')
+                                'Broken down by ' + _params.breakdownBy.value
+                            ]),
                   scales: ChartScales(xAxes: [
                     ChartXAxe(
                         type: 'linear',
