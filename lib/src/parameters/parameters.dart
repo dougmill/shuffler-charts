@@ -54,6 +54,7 @@ class Shuffling extends EnumClass {
   static Serializer<Shuffling> get serializer => _$shufflingSerializer;
 
   static const Shuffling normal = _$normal;
+  static const Shuffling hand = _$hand;
   static const Shuffling smoothed = _$smoothed;
 
   const Shuffling._(String name) : super(name);
@@ -141,7 +142,6 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
   Parameter<DisplayOption> get options;
   Parameter<int> get deckSize;
   Parameter<int> get numCards;
-  Parameter<int> get bestOf;
   Parameter<Shuffling> get shuffling;
   Parameter<MulliganType> get mulliganType;
   Parameter<int> get mulligans;
@@ -173,7 +173,6 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
           options: map['options'],
           deckSize: map['deckSize'],
           numCards: map['numCards'],
-          bestOf: map['bestOf'],
           shuffling: map['shuffling'],
           mulliganType: map['mulliganType'],
           mulligans: map['mulligans'],
@@ -243,7 +242,6 @@ List<Option<String>> _getCommonAxisOptions(StatsType type) {
       Option.of('deckSize', 'Cards in deck'),
     if (type == StatsType.handLands) Option.of('numCards', 'Lands in deck'),
     if (type == StatsType.cardCopies) Option.of('numCards', 'Relevant cards'),
-    Option.of('bestOf', 'Best of'),
     Option.of('shuffling', 'Shuffling'),
     Option.of('mulliganType', 'Mulligan type'),
     Option.of('mulligans', 'Mulligans'),
@@ -361,18 +359,13 @@ void initialize(ParametersBuilder b) {
     ..options = BuiltList()
     ..multiSelections = BuiltList());
 
-  b.bestOf = Parameter((p) => p
-    ..type = ParameterType.toggles
-    ..name = 'Best of'
-    ..options = BuiltList([Option.of(1, '1', false), Option.of(3, '3', true)])
-    ..multiSelections = BuiltList([Option.all(p.options)]));
-
   b.shuffling = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Shuffling'
     ..options = BuiltList([
-      Option.of(Shuffling.normal, 'Normal', true),
-      Option.of(Shuffling.smoothed, 'Smoothed', false)
+      Option.of(Shuffling.normal, 'Normal (Best of 3)', true),
+      Option.of(Shuffling.hand, 'Bo1 hand selection', false),
+      Option.of(Shuffling.smoothed, 'Play queue smoothing', false)
     ])
     ..multiSelections = BuiltList([Option.all(p.options)]));
 
@@ -440,19 +433,18 @@ void initialize(ParametersBuilder b) {
       ..multiSelections = BuiltList();
   }
 
-  dummySetter dummyWithValue<T>(T value) => (p) {
+  dummySetter<T> dummyWithValue<T>(T value) => (p) {
         dummyParam(p);
         p.value = value;
       };
 
   var dummy = Parameters((p) => p
-    ..type = Parameter(dummyWithValue(StatsType.cardPositions))
+    ..type = Parameter(dummyWithValue(StatsType.handLands))
     ..xAxis = Parameter(dummyParam)
     ..breakdownBy = Parameter(dummyParam)
     ..options = Parameter(dummyParam)
     ..deckSize = Parameter(dummyParam)
     ..numCards = Parameter(dummyParam)
-    ..bestOf = Parameter(dummyParam)
     ..shuffling = Parameter(dummyParam)
     ..mulliganType = Parameter(dummyParam)
     ..mulligans = Parameter(dummyParam)
@@ -618,15 +610,17 @@ void validate(Parameters old, ParametersBuilder updated) {
           .contains(type)) ...[
         if (updated.deckSize.value != 40) ..._range(10, 13),
         ..._range(14, 20),
-        if (updated.deckSize.value != 40)
-          ..._range(21, 28)
-        // cardPositionsIndependent does not do estimations, so check for
-        // cardPositions only, not type.isByPosition
-      ] else if (type == StatsType.cardPositions) ...[
-        Option.of(0, 'Estimate for every card'),
+        if (updated.deckSize.value != 40) ..._range(21, 28)
+      ] else if (type.isByPosition) ...[
+        // cardPositionsIndependent does not do estimations, so include
+        // estimation only for cardPositions
+        if (type == StatsType.cardPositions)
+          Option.of(0, 'Estimate for every card'),
         ..._range(1, 4),
-        if (updated.deckSize.value != 60) ..._range(15, 18),
-        if (updated.deckSize.value != 40) ..._range(22, 25)
+        if (updated.deckSize.value == 40)
+          ..._range(15, 18),
+        if (updated.deckSize.value == 60)
+          ..._range(22, 25)
       ] else if (type == StatsType.cardCopies)
         ..._range(2, 4)
     ]);
@@ -639,28 +633,8 @@ void validate(Parameters old, ParametersBuilder updated) {
         .rebuild(paramUpdater(old.numCards, newOptions, paramType));
   }
 
-  error = !updated.bestOf.options[0].selected &&
-          updated.bestOf.options[1].selected &&
-          !updated.shuffling.options[0].selected &&
-          updated.shuffling.options[1].selected
-      ? 'Bo3 cannot have smoothed shuffling'
-      : null;
-  updated.bestOf = updated.bestOf.rebuild((p) {
-    multiSelectionsUpdater(old.bestOf)(p);
-    if (error == null) {
-      defaultErrorSetter()(p);
-    } else {
-      errorSetter(error)(p);
-    }
-  });
-  updated.shuffling = updated.shuffling.rebuild((p) {
-    multiSelectionsUpdater(old.shuffling)(p);
-    if (error == null) {
-      defaultErrorSetter()(p);
-    } else {
-      errorSetter(error)(p);
-    }
-  });
+  updated.shuffling =
+      updated.shuffling.rebuild(defaultParamUpdater(old.shuffling));
 
   bool isValueSelected<T>(Parameter<T> p, T value) {
     return p.options.any((o) => o.selected && o.value == value);
