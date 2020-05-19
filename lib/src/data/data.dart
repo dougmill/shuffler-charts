@@ -60,7 +60,7 @@ abstract class LandsInHandEntry
       _$landsInHandEntrySerializer;
 
   static final BuiltList<String> _indexNames =
-      BuiltList.of(const ["mulligans", "numDrawn"]);
+      BuiltList.of(const ['mulligans', 'numDrawn']);
   @override
   BuiltList<String> get indexNames => _indexNames;
 
@@ -76,8 +76,13 @@ abstract class LandsInLibraryEntry
   static Serializer<LandsInLibraryEntry> get serializer =>
       _$landsInLibraryEntrySerializer;
 
-  static final BuiltList<String> _indexNames = BuiltList.of(
-      const ["mulligans", "landsInHand", "libraryPosition", "numDrawn"]);
+  static final BuiltList<String> _indexNames = BuiltList.of(const [
+    'mulligans',
+    'landsInHand',
+    'libraryPosition',
+    'numDrawn',
+    'known'
+  ]);
   @override
   BuiltList<String> get indexNames => _indexNames;
 
@@ -95,7 +100,7 @@ abstract class CardsByPositionEntry
       _$cardsByPositionEntrySerializer;
 
   static final BuiltList<String> _indexNames =
-      BuiltList.of(const ["mulligans", "decklistPosition", "numDrawn"]);
+      BuiltList.of(const ['mulligans', 'decklistPosition', 'numDrawn']);
   @override
   BuiltList<String> get indexNames => _indexNames;
 
@@ -113,7 +118,7 @@ abstract class CardsByCountEntry
       _$cardsByCountEntrySerializer;
 
   static final BuiltList<String> _indexNames =
-      BuiltList.of(const ["mulligans", "numDrawn"]);
+      BuiltList.of(const ['mulligans', 'numDrawn']);
   @override
   BuiltList<String> get indexNames => _indexNames;
 

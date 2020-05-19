@@ -148,6 +148,7 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
   Parameter<int> get numDrawn;
   Parameter<int> get landsInHand;
   Parameter<int> get libraryPosition;
+  Parameter<int> get known;
   Parameter<int> get decklistPosition;
   Parameter<int> get week;
 
@@ -179,6 +180,7 @@ abstract class Parameters implements Built<Parameters, ParametersBuilder> {
           numDrawn: map['numDrawn'],
           landsInHand: map['landsInHand'],
           libraryPosition: map['libraryPosition'],
+          known: map['known'],
           decklistPosition: map['decklistPosition'],
           week: map['week']);
 }
@@ -402,6 +404,13 @@ void initialize(ParametersBuilder b) {
     ..options = BuiltList()
     ..multiSelections = BuiltList());
 
+  b.known = Parameter((p) => p
+    ..type = ParameterType.selection
+    ..name = 'Data availability'
+    ..value = 0
+    ..options = BuiltList()
+    ..multiSelections = BuiltList());
+
   b.decklistPosition = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Position in decklist'
@@ -451,6 +460,7 @@ void initialize(ParametersBuilder b) {
     ..numDrawn = Parameter(dummyParam)
     ..landsInHand = Parameter(dummyParam)
     ..libraryPosition = Parameter(dummyParam)
+    ..known = Parameter(dummyParam)
     ..decklistPosition = Parameter(dummyParam)
     ..week = Parameter(dummyParam));
 
@@ -698,6 +708,16 @@ void validate(Parameters old, ParametersBuilder updated) {
   }
   updated.landsInHand =
       updated.landsInHand.rebuild(paramUpdater(old.landsInHand, newOptions));
+
+  if (type == StatsType.libraryLands) {
+    newOptions = BuiltList([
+      Option.of(0, 'All needed cards revealed'),
+      Option.of(1, '1 card unknown')
+    ]);
+  } else {
+    newOptions = BuiltList();
+  }
+  updated.known = updated.known.rebuild(paramUpdater(old.known, newOptions));
 
   if (type == StatsType.libraryLands) {
     newOptions = _builtRange(0, 9, labelFunc: (i) => i + 1);

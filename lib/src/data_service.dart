@@ -86,7 +86,7 @@ class DataService {
       for (var option in params.options.options) option.value: option.selected,
       if (params.xAxis.value is DisplayOption) params.xAxis.value: true
     });
-    var statsBuilder = Map<DisplayOption, Map<Object, Map<Object, num>>>();
+    var statsBuilder = <DisplayOption, Map<Object, Map<Object, num>>>{};
 
     entry:
     for (int i = 0; i < data.length; i++) {
@@ -145,7 +145,8 @@ class DataService {
       }
 
       for (var field in group.asMap.entries) {
-        if (!paramValuesMap[field.key].contains(field.value)) {
+        if (paramValuesMap.containsKey(field.key) &&
+            !paramValuesMap[field.key].contains(field.value)) {
           continue entry;
         }
         maybeSetKey(field.key, field.value);
@@ -185,7 +186,14 @@ class DataService {
         } else {
           for (int selected in paramValuesMap[indexName]) {
             maybeSetKey(indexName, selected);
-            processLists(list[selected], currentDepth + 1);
+            var childList = params.type.value == StatsType.libraryLands &&
+                    indexName == 'libraryPosition'
+                ? BuiltList<num>([
+                    for (BuiltList<num> inner in list[selected])
+                      inner[params.known.value]
+                  ])
+                : list[selected];
+            processLists(childList, currentDepth + 1);
           }
         }
       }
