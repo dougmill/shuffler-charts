@@ -367,7 +367,6 @@ void initialize(ParametersBuilder b) {
     ..options = BuiltList([
       Option.of(DisplayOption.actual, 'Show actual values', true),
       Option.of(DisplayOption.expected, 'Show expected values', true),
-      Option.of(DisplayOption.bugged, 'Show prediction for bug', true),
       Option.of(DisplayOption.sampleSize, 'Show sample sizes', false)
     ])
     ..multiSelections = BuiltList());
