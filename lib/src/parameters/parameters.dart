@@ -538,7 +538,7 @@ void validate(Parameters old, ParametersBuilder updated) {
   const String unsetError = 'Select a value.';
   String error;
   bool isValueInOptions<T>(Parameter<T> p) =>
-      p.options.any((o) => o.value == p.value);
+      p.options.isEmpty || p.options.any((o) => o.value == p.value);
   String findAxisError<T>(Parameter<T> p) {
     if (!isValueInOptions(updated.xAxis)) {
       return unsetError;
@@ -607,7 +607,7 @@ void validate(Parameters old, ParametersBuilder updated) {
   }
 
   bool isAnyValueSelected<T>(ParameterBuilder<T> p) =>
-      p.options.any((o) => o.selected);
+      p.options.isEmpty || p.options.any((o) => o.selected);
 
   void Function(ParameterBuilder<T>) defaultErrorSetter<T>() {
     return (p) {

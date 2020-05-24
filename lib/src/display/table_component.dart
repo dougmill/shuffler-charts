@@ -90,10 +90,10 @@ abstract class Table implements Built<Table, TableBuilder> {
         ..rowLabels = BuiltList.of(
             [for (var value in data.values.first[''].keys) value.toString()])
         ..values = BuiltMap.of({
-          for (var row in builder.rowLabels)
-            row: BuiltMap.of({
-              for (var column in builder.columnLabels)
-                column: data[column][''][row]
+          for (var row in data.values.first[''].keys)
+            row.toString(): BuiltMap.of({
+              for (var option in data.keys)
+                option.label: data[option][''][row]
             })
         }));
 

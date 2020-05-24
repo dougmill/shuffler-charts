@@ -37,7 +37,7 @@ class DataService {
   }
 
   Stream<LoadingState> _fetchData(FetchParameters params) async* {
-    String url = '/${params.type.name}.json';
+    String url = '/shuffler_stats.json';
     Future<String> request = http.read(url);
     yield LoadingState((b) => b.stage = LoadingStage.fetching);
     await _runEventLoop();
@@ -82,11 +82,22 @@ class DataService {
       }
     });
 
-    var options = BuiltMap<DisplayOption, bool>.of({
-      for (var option in params.options.options) option.value: option.selected,
-      if (params.xAxis.value is DisplayOption) params.xAxis.value: true
+    var options = BuiltSet<DisplayOption>.of({
+      for (var option in params.options.options)
+        if (option.selected) option.value,
+      if (params.xAxis.value is DisplayOption) params.xAxis.value
     });
-    var statsBuilder = <DisplayOption, Map<Object, Map<Object, num>>>{};
+    var statsBuilder = <DisplayOption, Map<Object, Map<Object, num>>>{
+      for (var option in {...options, DisplayOption.sampleSize})
+        option: {
+          for (var breakdownKey in params.breakdownBy.value == 'none'
+              ? ['']
+              : paramValuesMap[params.breakdownBy.value])
+            breakdownKey: {
+              for (var xKey in paramValuesMap[params.xAxis.value]) xKey: 0
+            }
+        }
+    };
 
     entry:
     for (int i = 0; i < data.length; i++) {
@@ -156,10 +167,10 @@ class DataService {
         String indexName = entry.indexNames[currentDepth];
         if (list is BuiltList<num>) {
           var sampleSize = list.reduce((a, b) => a + b);
-          var expectedDistribution = options[DisplayOption.expected]
+          var expectedDistribution = options.contains(DisplayOption.expected)
               ? hypergeometric(inputsForExpected.build())
               : const <double>[];
-          var buggedDistribution = options[DisplayOption.bugged]
+          var buggedDistribution = options.contains(DisplayOption.bugged)
               ? bugged(inputsForBugged.build())
               : const <double>[];
           for (int i = 0; i < list.length; i++) {
@@ -170,14 +181,14 @@ class DataService {
             }
             addToStat(DisplayOption.sampleSize, sampleSize);
             int multiplier = params.yAxis.value == YAxis.average ? i : 1;
-            if (options[DisplayOption.actual]) {
+            if (options.contains(DisplayOption.actual)) {
               addToStat(DisplayOption.actual, list[i] * multiplier);
             }
-            if (options[DisplayOption.expected]) {
+            if (options.contains(DisplayOption.expected)) {
               addToStat(DisplayOption.expected,
                   expectedDistribution[i] * sampleSize * multiplier);
             }
-            if (options[DisplayOption.bugged]) {
+            if (options.contains(DisplayOption.bugged)) {
               addToStat(DisplayOption.bugged,
                   buggedDistribution[i] * sampleSize * multiplier);
             }
@@ -233,7 +244,7 @@ class DataService {
       var lineStatsBuilder =
           MapBuilder<DisplayOption, BuiltMap<Object, BuiltMap<Object, num>>>();
       statsBuilder.forEach((displayOption, breakdownMap) {
-        if (options[displayOption]) {
+        if (options.contains(displayOption)) {
           var breakdownBuilder = MapBuilder<Object, BuiltMap<Object, num>>();
           breakdownMap.forEach((breakdown, xMap) =>
               breakdownBuilder[breakdown] = BuiltMap<Object, num>.of(xMap));
