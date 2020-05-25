@@ -58,6 +58,7 @@ class TableComponent {
   BuiltList<String> get columnLabels => _table?.columnLabels;
   BuiltList<String> get rowLabels => _table?.rowLabels;
   BuiltMap<String, BuiltMap<String, num>> get values => _table?.values;
+  YAxis get dataMeaning => _params.yAxis.value;
 }
 
 @BuiltValue(nestedBuilders: false)
@@ -169,6 +170,20 @@ abstract class Table implements Built<Table, TableBuilder> {
 
 @Pipe('tableValue', pure: true)
 class ValuePipe implements PipeTransform {
-  dynamic transform(dynamic /* num */ value) =>
-      value is num && value.isNaN ? 'No data' : value;
+  dynamic transform(num value, YAxis meaning, String row, String column) {
+    if (value.isNaN) {
+      return 'No data';
+    }
+    if (row == DisplayOption.sampleSize.label || column == DisplayOption.sampleSize.label) {
+      return value;
+    }
+    switch (meaning) {
+      case YAxis.average:
+        return value.toStringAsFixed(2);
+      case YAxis.percentage:
+        return (value * 100).toStringAsFixed(5) + '%';
+      case YAxis.count:
+        return value % 1 == 0 ? value : value.toStringAsFixed(2);
+    }
+  }
 }

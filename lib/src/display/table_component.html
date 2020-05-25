@@ -5,7 +5,7 @@
     <th *ngFor="let column of columnLabels">{{ column }}</th>
   </tr>
   <tr *ngFor="let row of rowLabels">
-    <td>{{ row }}</td>
-    <td *ngFor="let column of columnLabels">{{ values[row][column] | tableValue }}</td>
+    <td class="rowLabel">{{ row }}</td>
+    <td class="value" *ngFor="let column of columnLabels">{{ values[row][column] | tableValue:dataMeaning:row:column }}</td>
   </tr>
 </table>
