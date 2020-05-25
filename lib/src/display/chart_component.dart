@@ -57,6 +57,11 @@ class ChartComponent implements OnInit {
       return str[0].toUpperCase() + str.substring(1);
     }
 
+    var paramsMap = _params.asMap;
+    var breakdownLabel = paramsMap[_params.breakdownBy.value]?.name;
+    var xLabel =
+        paramsMap[_params.xAxis.value]?.name ?? _params.xAxis.value.toString();
+
     if (state.value.lineStats != null) {
       var stats = state.value.lineStats;
       breakdownValues = stats.values.first.keys.toList();
@@ -101,26 +106,25 @@ class ChartComponent implements OnInit {
                       text: yAxis == YAxis.average
                           ? [
                               'Average ' + _params.numDrawn.name.toLowerCase(),
-                              'vs ' + _params.xAxis.value.toString(),
+                              'vs ' + xLabel.toLowerCase(),
                               'In games matching selected parameters',
-                              if (_params.breakdownBy.value != 'none')
-                                'Broken down by ' + _params.breakdownBy.value
+                              if (breakdownLabel != null)
+                                'Broken down by ' + breakdownLabel.toLowerCase()
                             ]
                           : [
                               capitalize(yAxis.name) +
                                   ' of games with selected ' +
                                   _params.numDrawn.name.toLowerCase(),
-                              'vs ' + _params.xAxis.value.toString(),
+                              if (xLabel != null) 'vs ' + xLabel.toLowerCase(),
                               'Out of those matching selected parameters',
-                              if (_params.breakdownBy.value != 'none')
-                                'Broken down by ' + _params.breakdownBy.value
+                              if (breakdownLabel != null)
+                                'Broken down by ' + breakdownLabel.toLowerCase()
                             ]),
                   scales: ChartScales(xAxes: [
                     ChartXAxe(
                         type: 'category',
                         scaleLabel: ScaleTitleOptions(
-                            display: true,
-                            labelString: _params.xAxis.value.toString()))
+                            display: true, labelString: xLabel))
                   ], yAxes: [
                     ChartYAxe(
                         type: 'linear',
@@ -180,27 +184,26 @@ class ChartComponent implements OnInit {
                       text: yAxis == YAxis.average
                           ? [
                               'Average ' + _params.numDrawn.name.toLowerCase(),
-                              'vs ' + _params.xAxis.value.toString(),
+                              'vs ' + xLabel.toLowerCase(),
                               'In games matching selected parameters',
-                              if (_params.breakdownBy.value != 'none')
-                                'Broken down by ' + _params.breakdownBy.value
+                              if (breakdownLabel != null)
+                                'Broken down by ' + breakdownLabel.toLowerCase()
                             ]
                           : [
                               capitalize(yAxis.name) +
                                   ' of games with selected ' +
                                   _params.numDrawn.name.toLowerCase(),
-                              yTitle + ' vs ' + _params.xAxis.value.toString(),
+                              yTitle + ' vs ' + xLabel.toLowerCase(),
                               'Out of those matching selected parameters',
-                              if (_params.breakdownBy.value != 'none')
-                                'Broken down by ' + _params.breakdownBy.value
+                              if (breakdownLabel != null)
+                                'Broken down by ' + breakdownLabel.toLowerCase()
                             ]),
                   scales: ChartScales(xAxes: [
                     ChartXAxe(
                         type: 'linear',
                         ticks: TickOptions(beginAtZero: true, min: 0),
                         scaleLabel: ScaleTitleOptions(
-                            display: true,
-                            labelString: _params.xAxis.value.toString()))
+                            display: true, labelString: xLabel))
                   ], yAxes: [
                     ChartYAxe(
                         type: 'linear',

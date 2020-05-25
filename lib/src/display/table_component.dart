@@ -16,6 +16,7 @@ part 'table_component.g.dart';
   styleUrls: ['table_component.css'],
   templateUrl: 'table_component.html',
   directives: [coreDirectives],
+  pipes: [ValuePipe],
   exports: [LoadingStage],
 )
 class TableComponent {
@@ -77,14 +78,14 @@ abstract class Table implements Built<Table, TableBuilder> {
               data) =>
       /*
       With no breakdown param:
-        The indices of `data` are, in order, the display options, a placeholder
-          value ('') for the breakdown, and the x values.
-        Columns are the display options (actual/expected/bugged/sample).
-        Column labels have no overall header.
-        Rows are x values.
-       */
+      The indices of `data` are, in order, the display options, a placeholder
+        value ('') for the breakdown, and the x values.
+      Columns are the display options (actual/expected/bugged/sample).
+      Column labels have no overall header.
+      Rows are x values.
+     */
       Table((builder) => builder
-        ..rowHeader = params.xAxis.value.toString()
+        ..rowHeader = params.asMap[params.xAxis.value].name
         ..columnLabels =
             BuiltList.of([for (var option in data.keys) option.label])
         ..rowLabels = BuiltList.of(
@@ -92,8 +93,7 @@ abstract class Table implements Built<Table, TableBuilder> {
         ..values = BuiltMap.of({
           for (var row in data.values.first[''].keys)
             row.toString(): BuiltMap.of({
-              for (var option in data.keys)
-                option.label: data[option][''][row]
+              for (var option in data.keys) option.label: data[option][''][row]
             })
         }));
 
@@ -113,8 +113,8 @@ abstract class Table implements Built<Table, TableBuilder> {
         bool sampleSizeIsColumn = params.breakdownBy.value == 'numDrawn' &&
             data.containsKey(DisplayOption.sampleSize);
         builder
-          ..columnHeader = params.breakdownBy.value
-          ..rowHeader = params.xAxis.value.toString()
+          ..columnHeader = params.asMap[params.breakdownBy.value].name
+          ..rowHeader = params.asMap[params.xAxis.value].name
           ..columnLabels = BuiltList.of([
             for (var breakdown in data.values.first.keys) breakdown.toString(),
             if (sampleSizeIsColumn) DisplayOption.sampleSize.label
@@ -123,14 +123,14 @@ abstract class Table implements Built<Table, TableBuilder> {
             for (var value in data.values.first.values.first.keys) ...[
               for (var option in data.keys)
                 if (!sampleSizeIsColumn || option != DisplayOption.sampleSize)
-                  '$value ${option.label}'
+                  '$value, ${option.label}'
             ]
           ])
           ..values = BuiltMap.of({
             for (var value in data.values.first.values.first.keys) ...{
               for (var option in data.keys)
                 if (!sampleSizeIsColumn || option != DisplayOption.sampleSize)
-                  '$value ${option.label}': BuiltMap.of({
+                  '$value, ${option.label}': BuiltMap.of({
                     for (var breakdown in data.values.first.keys)
                       breakdown.toString(): data[option][breakdown][value],
                     if (sampleSizeIsColumn)
@@ -153,7 +153,7 @@ abstract class Table implements Built<Table, TableBuilder> {
       Rows are breakdown values.
      */
       Table((builder) => builder
-        ..rowHeader = params.breakdownBy.value.toString()
+        ..rowHeader = params.asMap[params.breakdownBy.value].name
         ..columnLabels =
             BuiltList.of([for (var option in data.keys) option.label])
         ..rowLabels = BuiltList.of(
@@ -165,4 +165,10 @@ abstract class Table implements Built<Table, TableBuilder> {
                 column: data[column][row].y
             })
         }));
+}
+
+@Pipe('tableValue', pure: true)
+class ValuePipe implements PipeTransform {
+  dynamic transform(dynamic /* num */ value) =>
+      value is num && value.isNaN ? 'No data' : value;
 }

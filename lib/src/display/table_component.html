@@ -6,6 +6,6 @@
   </tr>
   <tr *ngFor="let row of rowLabels">
     <td>{{ row }}</td>
-    <td *ngFor="let column of columnLabels">{{ values[row][column] }}</td>
+    <td *ngFor="let column of columnLabels">{{ values[row][column] | tableValue }}</td>
   </tr>
 </table>
