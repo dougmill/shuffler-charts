@@ -10988,13 +10988,17 @@ module.exports = function(Chart) {
 				globalDefaults = Chart.defaults.global,
 				display = opts.display,
 				fontSize = valueOrDefault(opts.fontSize, globalDefaults.defaultFontSize),
-				minSize = me.minSize;
+				minSize = me.minSize,
+				lines = helpers.isArray(opts.text) ? opts.text.length : 1,
+				textThickness = display
+					? fontSize * (1.5 * lines - 0.5) + (opts.padding * 2)
+					: 0;
 
 			if (me.isHorizontal()) {
 				minSize.width = me.maxWidth; // fill all the width
-				minSize.height = display ? fontSize + (opts.padding * 2) : 0;
+				minSize.height = textThickness;
 			} else {
-				minSize.width = display ? fontSize + (opts.padding * 2) : 0;
+				minSize.width = textThickness;
 				minSize.height = me.maxHeight; // fill all the height
 			}
 
@@ -11030,6 +11034,9 @@ module.exports = function(Chart) {
 					left = me.left,
 					bottom = me.bottom,
 					right = me.right,
+					linesAdjustment = helpers.isArray(opts.text)
+						? (opts.text.length - 1) * fontSize * 0.75
+						: 0,
 					maxWidth;
 
 				ctx.fillStyle = valueOrDefault(opts.fontColor, globalDefaults.defaultFontColor); // render in correct colour
@@ -11038,7 +11045,7 @@ module.exports = function(Chart) {
 				// Horizontal
 				if (me.isHorizontal()) {
 					titleX = left + ((right - left) / 2); // midpoint of the width
-					titleY = top + ((bottom - top) / 2); // midpoint of the height
+					titleY = top + ((bottom - top) / 2) - linesAdjustment; // midpoint of the height
 					maxWidth = right - left;
 				} else {
 					titleX = opts.position === 'left' ? left + (fontSize / 2) : right - (fontSize / 2);
@@ -11052,7 +11059,14 @@ module.exports = function(Chart) {
 				ctx.rotate(rotation);
 				ctx.textAlign = 'center';
 				ctx.textBaseline = 'middle';
-				ctx.fillText(opts.text, 0, 0, maxWidth);
+				if (helpers.isArray(opts.text)) {
+					for (var i = 0, y = 0; i < opts.text.length; ++i) {
+						ctx.fillText(opts.text[i], 0, y, maxWidth);
+						y += fontSize * 1.5;
+					}
+				} else {
+					ctx.fillText(opts.text, 0, 0, maxWidth);
+				}
 				ctx.restore();
 			}
 		}
