@@ -1,5 +1,7 @@
 <header>Choose parameters</header>
 
 <div>
-  <shuffle-parameter *ngFor="let key of paramKeys" [(param)]="paramsBuilder[key]"></shuffle-parameter>
+  <template ngFor let-key [ngForOf]="paramKeys">
+    <shuffle-parameter *ngIf="paramsBuilder[key].options.isNotEmpty" [(param)]="paramsBuilder[key]"></shuffle-parameter>
+  </template>
 </div>
