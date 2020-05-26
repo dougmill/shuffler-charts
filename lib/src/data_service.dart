@@ -173,13 +173,18 @@ class DataService {
           var buggedDistribution = options.contains(DisplayOption.bugged)
               ? bugged(inputsForBugged.build())
               : const <double>[];
+          if (params.breakdownBy.value != 'numDrawn') {
+            addToStat(DisplayOption.sampleSize, sampleSize);
+          }
           for (int i = 0; i < list.length; i++) {
             maybeSetKey(indexName, i);
             if (params.yAxis.value != YAxis.average &&
                 !paramValuesMap[indexName].contains(i)) {
               continue;
             }
-            addToStat(DisplayOption.sampleSize, sampleSize);
+            if (params.breakdownBy.value == 'numDrawn') {
+              addToStat(DisplayOption.sampleSize, sampleSize);
+            }
             int multiplier = params.yAxis.value == YAxis.average ? i : 1;
             if (options.contains(DisplayOption.actual)) {
               addToStat(DisplayOption.actual, list[i] * multiplier);

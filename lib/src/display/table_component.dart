@@ -174,7 +174,8 @@ class ValuePipe implements PipeTransform {
     if (value.isNaN) {
       return 'No data';
     }
-    if (row == DisplayOption.sampleSize.label || column == DisplayOption.sampleSize.label) {
+    if (row.endsWith(DisplayOption.sampleSize.label) ||
+        column.endsWith(DisplayOption.sampleSize.label)) {
       return value;
     }
     switch (meaning) {
