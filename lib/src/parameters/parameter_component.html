@@ -1,17 +1,21 @@
-<header>{{ paramBuilder.name }}</header>
+<header (click)="expanded = !expanded">{{ paramBuilder.name }}
+  <span *ngIf="paramBuilder.error != null" class="error">{{ paramBuilder.error }}</span>
+  <span [class.arrow-right]="!expanded" [class.arrow-down]="expanded"></span>
+</header>
 
-<template #content [ngSwitch]="paramBuilder.type">
-  <select *ngSwitchCase="ParameterType.selection" [(ngModel)]="paramBuilder.value">
-    <option *ngFor="let option of paramBuilder.options; trackBy: trackByLabel"
-            [ngValue]="option.value">
-      {{ option.label }}
-    </option>
-  </select>
+<div *ngIf="expanded" [ngSwitch]="paramBuilder.type">
+  <template [ngSwitchCase]="ParameterType.selection">
+    <template ngFor let-option [ngForOf]="paramBuilder.options" [ngForTrackBy]="trackByLabel">
+      <input type="radio" [name]="paramBuilder.name" [id]="paramBuilder.name + option.value.toString()"
+             [checked]="paramBuilder.value == option.value" [value]="option.value"
+             (click)="paramBuilder.value = option.value">
+      <label [attr.for]="paramBuilder.name + option.value.toString()">
+        {{ option.label }}
+      </label>
+    </template>
+  </template>
   <template [ngSwitchCase]="ParameterType.toggles">
     <shuffle-options-list [(options)]="paramBuilder.multiSelections"></shuffle-options-list>
     <shuffle-options-list [(options)]="paramBuilder.options"></shuffle-options-list>
   </template>
-</template>
-<template [ngTemplateOutlet]="content"></template>
-
-<footer *ngIf="paramBuilder.error != null">{{ paramBuilder.error }}</footer>
+</div>

@@ -16,6 +16,7 @@ import 'package:shuffler_charts/src/utils.dart';
   exports: const[ParameterType],
 )
 class ParameterComponent {
+  bool expanded = false;
   ParameterBuilder paramBuilder;
   final _output = BehaviorSubject<Parameter>();
 

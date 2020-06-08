@@ -12,9 +12,9 @@ header {
   font-weight: bold;
 }
 
-footer {
-  align-self: center;
+.error {
   margin: 1em 0;
   color: red;
+  font-size: 1em;
   font-weight: bold;
 }
