@@ -3,6 +3,7 @@ import 'package:angular_forms/angular_forms.dart';
 
 import 'package:rxdart/rxdart.dart';
 
+import 'package:shuffler_charts/src/layout/expandable_component.dart';
 import 'package:shuffler_charts/src/parameters/options_list_component.dart';
 import 'package:shuffler_charts/src/parameters/parameters.dart';
 import 'package:shuffler_charts/src/utils.dart';
@@ -12,11 +13,15 @@ import 'package:shuffler_charts/src/utils.dart';
   selector: 'shuffle-parameter',
   styleUrls: ['parameter_component.css'],
   templateUrl: 'parameter_component.html',
-  directives: const [coreDirectives, formDirectives, OptionsListComponent],
-  exports: const[ParameterType],
+  directives: const [
+    coreDirectives,
+    formDirectives,
+    ExpandableComponent,
+    OptionsListComponent
+  ],
+  exports: const [ParameterType],
 )
 class ParameterComponent {
-  bool expanded = false;
   ParameterBuilder paramBuilder;
   final _output = BehaviorSubject<Parameter>();
 

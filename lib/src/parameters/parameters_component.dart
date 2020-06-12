@@ -4,6 +4,7 @@ import 'package:angular_forms/angular_forms.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'package:shuffler_charts/src/layout/expandable_component.dart';
 import 'package:shuffler_charts/src/parameters/parameter_component.dart';
 import 'package:shuffler_charts/src/parameters/parameters.dart';
 
@@ -12,7 +13,12 @@ import 'package:shuffler_charts/src/parameters/parameters.dart';
   selector: 'shuffle-parameters',
   styleUrls: ['parameters_component.css'],
   templateUrl: 'parameters_component.html',
-  directives: const [coreDirectives, formDirectives, ParameterComponent],
+  directives: const [
+    coreDirectives,
+    formDirectives,
+    ExpandableComponent,
+    ParameterComponent
+  ],
 )
 class ParametersComponent {
   BuiltList<String> paramKeys;

@@ -6,6 +6,7 @@ import 'package:built_value/built_value.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'package:shuffler_charts/src/data_service.dart';
+import 'package:shuffler_charts/src/layout/expandable_component.dart';
 import 'package:shuffler_charts/src/parameters/parameters.dart';
 
 part 'table_component.g.dart';
@@ -15,7 +16,7 @@ part 'table_component.g.dart';
   selector: 'shuffle-table',
   styleUrls: ['table_component.css'],
   templateUrl: 'table_component.html',
-  directives: [coreDirectives],
+  directives: [coreDirectives, ExpandableComponent],
   pipes: [ValuePipe],
   exports: [LoadingStage],
 )

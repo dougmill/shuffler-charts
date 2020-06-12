@@ -1,12 +1,4 @@
-:host {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-}
-
 header {
-  align-self: center;
   font-size: 1.17em;
   margin: 1em 0;
   font-weight: bold;
@@ -17,4 +9,11 @@ header {
   color: red;
   font-size: 1em;
   font-weight: bold;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
 }

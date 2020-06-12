@@ -1,11 +1,3 @@
-:host {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
 header {
   align-self: center;
   font-size: 2em;

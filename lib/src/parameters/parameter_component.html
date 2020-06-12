@@ -1,21 +1,22 @@
-<header (click)="expanded = !expanded">{{ paramBuilder.name }}
-  <span *ngIf="paramBuilder.error != null" class="error">{{ paramBuilder.error }}</span>
-  <span [class.arrow-right]="!expanded" [class.arrow-down]="expanded"></span>
-</header>
+<expandable>
+  <header>{{ paramBuilder.name }}
+    <span *ngIf="paramBuilder.error != null" class="error">{{ paramBuilder.error }}</span>
+  </header>
 
-<div *ngIf="expanded" [ngSwitch]="paramBuilder.type">
-  <template [ngSwitchCase]="ParameterType.selection">
-    <template ngFor let-option [ngForOf]="paramBuilder.options" [ngForTrackBy]="trackByLabel">
-      <input type="radio" [name]="paramBuilder.name" [id]="paramBuilder.name + option.value.toString()"
-             [checked]="paramBuilder.value == option.value" [value]="option.value"
-             (click)="paramBuilder.value = option.value">
-      <label [attr.for]="paramBuilder.name + option.value.toString()">
-        {{ option.label }}
-      </label>
-    </template>
-  </template>
-  <template [ngSwitchCase]="ParameterType.toggles">
-    <shuffle-options-list [(options)]="paramBuilder.multiSelections"></shuffle-options-list>
-    <shuffle-options-list [(options)]="paramBuilder.options"></shuffle-options-list>
-  </template>
-</div>
+  <div [ngSwitch]="paramBuilder.type" class="options">
+    <ng-container *ngSwitchCase="ParameterType.selection">
+      <div *ngFor="let option of paramBuilder.options; trackBy: trackByLabel">
+        <input type="radio" [name]="paramBuilder.name" [id]="paramBuilder.name + option.value.toString()"
+               [checked]="paramBuilder.value == option.value" [value]="option.value"
+               (click)="paramBuilder.value = option.value">
+        <label [attr.for]="paramBuilder.name + option.value.toString()">
+          {{ option.label }}
+        </label>
+      </div>
+    </ng-container>
+    <ng-container *ngSwitchCase="ParameterType.toggles">
+      <shuffle-options-list [(options)]="paramBuilder.multiSelections"></shuffle-options-list>
+      <shuffle-options-list [(options)]="paramBuilder.options"></shuffle-options-list>
+    </ng-container>
+  </div>
+</expandable>
