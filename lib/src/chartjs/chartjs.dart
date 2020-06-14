@@ -202,8 +202,8 @@ abstract class ChartLegendItem {
 abstract class ChartTooltipItem {
   external String get xLabel;
   external set xLabel(String v);
-  external String get yLabel;
-  external set yLabel(String v);
+  external dynamic /*num|String*/ get yLabel;
+  external set yLabel(dynamic /*num|String*/ v);
   external num get datasetIndex;
   external set datasetIndex(num v);
   external num get index;
@@ -215,20 +215,21 @@ abstract class ChartTooltipItem {
 @anonymous
 @JS()
 abstract class ChartTooltipCallback {
-  external void beforeTitle([List<ChartTooltipItem> item, dynamic data]);
-  external void title([List<ChartTooltipItem> item, dynamic data]);
-  external void afterTitle([List<ChartTooltipItem> item, dynamic data]);
-  external void beforeBody([List<ChartTooltipItem> item, dynamic data]);
-  external void beforeLabel([ChartTooltipItem tooltipItem, dynamic data]);
-  external Func2<ChartTooltipItem, dynamic, String> get label;
-  external set label(Func2<ChartTooltipItem, dynamic, void> v);
-  external void afterLabel([ChartTooltipItem tooltipItem, dynamic data]);
-  external void afterBody([List<ChartTooltipItem> item, dynamic data]);
-  external void beforeFooter([List<ChartTooltipItem> item, dynamic data]);
-  external void footer([List<ChartTooltipItem> item, dynamic data]);
-  external void afterFooter([List<ChartTooltipItem> item, dynamic data]);
+  external void beforeTitle([List<ChartTooltipItem> item, LinearChartData data]);
+  external void title([List<ChartTooltipItem> item, LinearChartData data]);
+  external void afterTitle([List<ChartTooltipItem> item, LinearChartData data]);
+  external void beforeBody([List<ChartTooltipItem> item, LinearChartData data]);
+  external void beforeLabel([ChartTooltipItem tooltipItem, LinearChartData data]);
+  external Func2<ChartTooltipItem, LinearChartData, String> get label;
+  external set label(Func2<ChartTooltipItem, LinearChartData, void> v);
+  external void afterLabel([ChartTooltipItem tooltipItem, LinearChartData data]);
+  external void afterBody([List<ChartTooltipItem> item, LinearChartData data]);
+  external void beforeFooter([List<ChartTooltipItem> item, LinearChartData data]);
+  external void footer([List<ChartTooltipItem> item, LinearChartData data]);
+  external void afterFooter([List<ChartTooltipItem> item, LinearChartData data]);
   external factory ChartTooltipCallback({
-    Func2<ChartTooltipItem, dynamic, String> label
+    Func2<List<ChartTooltipItem>, LinearChartData, String> title,
+    Func2<ChartTooltipItem, LinearChartData, String> label
   });
 }
 
@@ -520,6 +521,39 @@ abstract class ChartTooltipOptions {
   external num get borderWidth;
   external set borderWidth(num v);
   external factory ChartTooltipOptions({
+    bool enabled,
+    String mode,
+    bool intersect,
+    dynamic /*String|CanvasGradient|CanvasPattern|List<String>*/ backgroundColor,
+    String titleFontFamily,
+    num titleFontSize,
+    String titleFontStyle,
+    dynamic /*String|CanvasGradient|CanvasPattern|List<String>*/ titleFontColor,
+    num titleSpacing,
+    num titleMarginBottom,
+    String bodyFontFamily,
+    num bodyFontSize,
+    String bodyFontStyle,
+    dynamic /*String|CanvasGradient|CanvasPattern|List<String>*/ bodyFontColor,
+    num bodySpacing,
+    String footerFontFamily,
+    num footerFontSize,
+    String footerFontStyle,
+    dynamic /*String|CanvasGradient|CanvasPattern|List<String>*/ footerFontColor,
+    num footerSpacing,
+    num footerMarginTop,
+    num xPadding,
+    num yPadding,
+    num caretSize,
+    num cornerRadius,
+    String multiKeyBackground,
+    bool filter(ChartTooltipItem item),
+    num itemSort(ChartTooltipItem itemA, ChartTooltipItem itemB),
+    String /*'average'|'nearest'*/ position,
+    num caretPadding,
+    bool displayColors,
+    dynamic /*String|CanvasGradient|CanvasPattern|List<String>*/ borderColor,
+    num borderWidth,
     ChartTooltipCallback callbacks
   });
 }

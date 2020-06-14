@@ -65,7 +65,7 @@ class ChartComponent implements OnInit {
     if (state.value.lineStats != null) {
       var stats = state.value.lineStats;
       breakdownValues = stats.values.first.keys.toList();
-      var xValues = stats.values.first.values.first.keys.toList();
+      var xValueOptions = paramsMap[_params.xAxis.value].options;
       String lineColor(DisplayOption option, Object breakdown) {
         int red = option == DisplayOption.bugged ? 255 : 0;
         int green = option == DisplayOption.expected ? 255 : 0;
@@ -82,15 +82,16 @@ class ChartComponent implements OnInit {
           ChartConfiguration(
               type: 'line',
               data: LinearChartData(labels: [
-                for (var x in xValues) x.toString()
+                for (var x in xValueOptions) if (x.selected) x.label
               ], datasets: [
-                for (var option in stats.keys)
-                  if (option != DisplayOption.sampleSize ||
-                      yAxis == YAxis.count)
-                    for (var breakdown in breakdownValues)
+                for (var breakdown in breakdownValues)
+                  for (var option in stats.keys)
+                    if (option != DisplayOption.sampleSize ||
+                        yAxis == YAxis.count)
                       ChartDataSets(
                           data: [
-                            for (var x in xValues) stats[option][breakdown][x]
+                            for (var x in xValueOptions)
+                              if (x.selected) stats[option][breakdown][x.value]
                           ],
                           label: breakdown == ''
                               ? option.label
@@ -120,6 +121,25 @@ class ChartComponent implements OnInit {
                               if (breakdownLabel != null)
                                 'Broken down by ' + breakdownLabel.toLowerCase()
                             ]),
+                  tooltips: ChartTooltipOptions(
+                      mode: 'index',
+                      intersect: false,
+                      callbacks: ChartTooltipCallback(label: ([item, data]) {
+                        var label = data.datasets[item.datasetIndex].label;
+                        var value = item.yLabel is num
+                            ? item.yLabel as num
+                            : num.parse(item.yLabel);
+                        switch (yAxis) {
+                          case YAxis.count:
+                            return '$label: ${value.round()}';
+                          case YAxis.percentage:
+                            return '$label: ${(value * 100).toStringAsFixed(2)}%';
+                          case YAxis.average:
+                            return '$label: ${value.toStringAsFixed(2)}';
+                          default:
+                            throw AssertionError('Unknown YAxis value $yAxis');
+                        }
+                      })),
                   scales: ChartScales(xAxes: [
                     ChartXAxe(
                         type: 'category',

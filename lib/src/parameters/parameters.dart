@@ -245,12 +245,26 @@ abstract class Option<T> implements Built<Option<T>, OptionBuilder<T>> {
           .build();
 }
 
-const numDrawnLabels = {
+const _numDrawnLabels = {
   StatsType.handLands: 'Lands drawn',
-  StatsType.libraryLands: 'Lands in library',
+  StatsType.libraryLands: 'Lands drawn from library',
   StatsType.cardPositions: 'Relevant cards drawn',
   StatsType.cardPositionsIndependent: 'Relevant cards drawn',
   StatsType.cardCopies: 'Copies drawn'
+};
+
+String _hl(int i) => '$i lands in deck';
+String _ll(int i) => '$i lands in deck';
+String _cp(int i) => '$i relevant cards in deck';
+String _cpi(int i) => '$i relevant cards in deck';
+String _cc(int i) => '$i copies in deck';
+
+const _numCardsLabelFuncs = {
+  StatsType.handLands: _hl,
+  StatsType.libraryLands: _ll,
+  StatsType.cardPositions: _cp,
+  StatsType.cardPositionsIndependent: _cpi,
+  StatsType.cardCopies: _cc
 };
 
 List<Option<String>> _getInputSelectOptions(StatsType type, YAxis yAxis) {
@@ -262,7 +276,7 @@ List<Option<String>> _getInputSelectOptions(StatsType type, YAxis yAxis) {
     Option.of('shuffling', 'Shuffling'),
     Option.of('mulliganType', 'Mulligan type'),
     Option.of('mulligans', 'Mulligans'),
-    if (yAxis != YAxis.average) Option.of('numDrawn', numDrawnLabels[type]),
+    if (yAxis != YAxis.average) Option.of('numDrawn', _numDrawnLabels[type]),
     if (type == StatsType.libraryLands)
       Option.of('landsInHand', 'Lands in opening hand'),
     if (type == StatsType.libraryLands)
@@ -319,6 +333,10 @@ String _weekLabel(int i) {
       ' - ${_months[endOfWeek.month]} ${endOfWeek.day}';
 }
 
+String _s(int i) {
+  return i == 1 ? '' : 's';
+}
+
 typedef dummySetter<T> = void Function(ParameterBuilder<T> p);
 
 void initialize(ParametersBuilder b) {
@@ -348,7 +366,7 @@ void initialize(ParametersBuilder b) {
     ..name = 'Y axis'
     ..value = YAxis.percentage
     ..options = BuiltList([
-      Option.of(YAxis.percentage, 'Percentage of sample'),
+      Option.of(YAxis.percentage, 'Percentage of games'),
       Option.of(YAxis.count, 'Count of games'),
       Option.of(YAxis.average, 'Average')
     ])
@@ -365,9 +383,9 @@ void initialize(ParametersBuilder b) {
     ..type = ParameterType.toggles
     ..name = 'Display options'
     ..options = BuiltList([
-      Option.of(DisplayOption.actual, 'Show actual values', true),
-      Option.of(DisplayOption.expected, 'Show expected values', true),
-      Option.of(DisplayOption.sampleSize, 'Show sample sizes', false)
+      Option.of(DisplayOption.actual, DisplayOption.actual.label, true),
+      Option.of(DisplayOption.expected, DisplayOption.expected.label, true),
+      Option.of(DisplayOption.sampleSize, DisplayOption.sampleSize.label, true)
     ])
     ..multiSelections = BuiltList());
 
@@ -375,13 +393,14 @@ void initialize(ParametersBuilder b) {
     ..type = ParameterType.selection
     ..name = 'Cards in deck'
     ..value = 60
-    ..options = BuiltList([Option.of(40, '40'), Option.of(60, '60')])
+    ..options =
+        BuiltList([Option.of(40, '40 cards'), Option.of(60, '60 cards')])
     ..multiSelections = BuiltList());
 
   b.numCards = Parameter((p) => p
     ..type = ParameterType.selection
     ..name = 'Number of relevant cards'
-    ..value = 1
+    ..value = 24
     ..options = BuiltList()
     ..multiSelections = BuiltList());
 
@@ -399,21 +418,23 @@ void initialize(ParametersBuilder b) {
     ..type = ParameterType.toggles
     ..name = 'Mulligan type'
     ..options = BuiltList([
-      Option.of(MulliganType.vancouver, 'Vancouver', true),
-      Option.of(MulliganType.london, 'London', true)
+      Option.of(MulliganType.vancouver, 'Vancouver mulligan', true),
+      Option.of(MulliganType.london, 'London mulligan', true)
     ])
     ..multiSelections = BuiltList([Option.all(p.options)]));
 
   b.mulligans = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Mulligans'
-    ..options = BuiltList(_range(0, 6, selected: [0]))
+    ..options = BuiltList(
+        _range(0, 6, labelFunc: (m) => '$m mulligan${_s(m)}', selected: [0]))
     ..multiSelections = BuiltList([Option.all(p.options)]));
 
   b.numDrawn = Parameter((p) => p
     ..type = ParameterType.toggles
-    ..name = numDrawnLabels[StatsType.cardPositions]
-    ..options = BuiltList(_range(0, 1, allSelected: true))
+    ..name = _numDrawnLabels[StatsType.cardPositions]
+    ..options = BuiltList(_range(0, 7,
+        labelFunc: (d) => '$d relevant cards drawn', allSelected: true))
     ..multiSelections = BuiltList());
 
   b.landsInHand = Parameter((p) => p
@@ -438,8 +459,7 @@ void initialize(ParametersBuilder b) {
   b.decklistPosition = Parameter((p) => p
     ..type = ParameterType.toggles
     ..name = 'Position in decklist'
-    ..options =
-        BuiltList(_range(0, 59, labelFunc: (i) => i + 1, allSelected: true))
+    ..options = BuiltList()
     ..multiSelections = BuiltList());
 
   int maxWeek = DateTime.now().difference(_endOfWeek0).inDays ~/ 7 + 1;
@@ -503,7 +523,7 @@ void validate(Parameters old, ParametersBuilder updated) {
           .rebuild((lo) => lo.insert(
               2,
               Option.of(
-                  DisplayOption.bugged, 'Show prediction for bug', true))));
+                  DisplayOption.bugged, DisplayOption.bugged.label, true))));
     } else if (!type.isByPosition && old.type.value.isByPosition) {
       updated.options = updated.options.rebuild(
           (p) => p.options = p.options.rebuild((lo) => lo.removeAt(2)));
@@ -511,11 +531,11 @@ void validate(Parameters old, ParametersBuilder updated) {
 
     updated.xAxis = updated.xAxis.rebuild((b) => b.options = BuiltList([
           ..._getInputSelectOptions(type, updated.yAxis.value),
-          Option.of(DisplayOption.actual, 'Actual values'),
-          Option.of(DisplayOption.expected, 'Expected values'),
+          Option.of(DisplayOption.actual, DisplayOption.actual.label),
+          Option.of(DisplayOption.expected, DisplayOption.expected.label),
           if (type.isByPosition)
-            Option.of(DisplayOption.bugged, 'Predicted values for bug'),
-          Option.of(DisplayOption.sampleSize, 'Sample sizes')
+            Option.of(DisplayOption.bugged, DisplayOption.bugged.label),
+          Option.of(DisplayOption.sampleSize, DisplayOption.sampleSize.label)
         ]));
     updated.breakdownBy = updated.breakdownBy.rebuild((p) => p.options =
             BuiltList([
@@ -643,21 +663,23 @@ void validate(Parameters old, ParametersBuilder updated) {
     newOptions = BuiltList([
       if (const [StatsType.handLands, StatsType.libraryLands]
           .contains(type)) ...[
-        if (updated.deckSize.value != 40) ..._range(10, 13),
-        ..._range(14, 20),
-        if (updated.deckSize.value != 40) ..._range(21, 28)
+        if (updated.deckSize.value != 40)
+          ..._range(10, 13, labelFunc: _numCardsLabelFuncs[type]),
+        ..._range(14, 20, labelFunc: _numCardsLabelFuncs[type]),
+        if (updated.deckSize.value != 40)
+          ..._range(21, 28, labelFunc: _numCardsLabelFuncs[type])
       ] else if (type.isByPosition) ...[
         // cardPositionsIndependent does not do estimations, so include
         // estimation only for cardPositions
         if (type == StatsType.cardPositions)
           Option.of(0, 'Estimate for every card'),
-        ..._range(1, 4),
+        ..._range(1, 4, labelFunc: _numCardsLabelFuncs[type]),
         if (updated.deckSize.value == 40)
-          ..._range(15, 18),
+          ..._range(15, 18, labelFunc: _numCardsLabelFuncs[type]),
         if (updated.deckSize.value == 60)
-          ..._range(22, 25)
+          ..._range(22, 25, labelFunc: _numCardsLabelFuncs[type])
       ] else if (type == StatsType.cardCopies)
-        ..._range(2, 4)
+        ..._range(2, 4, labelFunc: _numCardsLabelFuncs[type])
     ]);
 
     var paramType =
@@ -724,15 +746,16 @@ void validate(Parameters old, ParametersBuilder updated) {
       if (type.isByPosition) max(updated.numCards.value ?? 25, 1),
       if (type == StatsType.cardCopies) lastSelected(updated.numCards) ?? 4
     ].reduce(min);
-    newOptions = _builtRange(0, maxPossibleDrawn);
+    newOptions = _builtRange(0, maxPossibleDrawn,
+        labelFunc: (d) => '$d ${_numDrawnLabels[type].toLowerCase()}');
   }
   updated.numDrawn = updated.numDrawn.rebuild((builder) {
     paramUpdater(old.numDrawn, newOptions)(builder);
-    builder.name = numDrawnLabels[type];
+    builder.name = _numDrawnLabels[type];
   });
 
   if (type == StatsType.libraryLands) {
-    newOptions = _builtRange(0, 7);
+    newOptions = _builtRange(0, 7, labelFunc: (l) => '$l lands in hand');
   } else {
     newOptions = BuiltList();
   }
@@ -750,7 +773,8 @@ void validate(Parameters old, ParametersBuilder updated) {
   updated.known = updated.known.rebuild(paramUpdater(old.known, newOptions));
 
   if (type == StatsType.libraryLands) {
-    newOptions = _builtRange(0, 9, labelFunc: (i) => i + 1);
+    newOptions = _builtRange(0, 9,
+        labelFunc: (i) => 'Top ${i + 1} card${_s(i + 1)} of library');
   } else {
     newOptions = BuiltList();
   }
@@ -760,7 +784,12 @@ void validate(Parameters old, ParametersBuilder updated) {
   if (type.isByPosition) {
     int minBlockSize = max(updated.numCards.value ?? 1, 1);
     newOptions = _builtRange(0, updated.deckSize.value - minBlockSize,
-        labelFunc: (i) => i + 1);
+        labelFunc: (i) => minBlockSize == 1
+            ? 'Card ${i + 1}'
+            : 'Cards ${i + 1} to ${i + minBlockSize}',
+        allSelected: !old.type.value.isByPosition ||
+            old.decklistPosition.multiSelections
+                .every((multi) => multi.selected));
   } else {
     newOptions = BuiltList();
   }
