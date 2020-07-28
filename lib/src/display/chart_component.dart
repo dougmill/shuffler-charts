@@ -2,9 +2,9 @@ import 'dart:html';
 
 import 'package:angular/angular.dart';
 import 'package:rxdart/rxdart.dart';
+
 import 'package:shuffler_charts/src/chartjs/chartjs.dart';
 import 'package:shuffler_charts/src/data_service.dart';
-
 import 'package:shuffler_charts/src/parameters/parameters.dart';
 
 @Component(
@@ -31,12 +31,17 @@ class ChartComponent implements OnInit {
 
   final DataService _dataService;
   final ChangeDetectorRef _ref;
+  final NgZone _zone;
   ValueStream<LoadingState> state;
   Chart chart;
   @ViewChild('chartElement', read: HtmlElement)
   CanvasElement chartElement;
 
-  ChartComponent(this._dataService, this._ref);
+  List<String> title = const [];
+  LinearChartData data = LinearChartData(labels: [], datasets: []);
+  ChartTooltipModel tooltip;
+
+  ChartComponent(this._dataService, this._ref, this._zone);
 
   @override
   void ngOnInit() {
@@ -49,6 +54,9 @@ class ChartComponent implements OnInit {
     if ((state.value?.lineStats?.values?.isEmpty ?? true) &&
         (state.value?.scatterStats?.values?.isEmpty ?? true)) {
       chart = null;
+      title = const [];
+      data = LinearChartData(labels: [], datasets: []);
+      tooltip = null;
       return;
     }
     List<Object> breakdownValues;
@@ -61,6 +69,24 @@ class ChartComponent implements OnInit {
     var breakdownLabel = paramsMap[_params.breakdownBy.value]?.name;
     var xLabel =
         paramsMap[_params.xAxis.value]?.name ?? _params.xAxis.value.toString();
+
+    title = yAxis == YAxis.average
+        ? [
+            'Average ' + _params.numDrawn.name.toLowerCase(),
+            'vs ' + xLabel.toLowerCase(),
+            'In games matching selected parameters',
+            if (breakdownLabel != null)
+              'Broken down by ' + breakdownLabel.toLowerCase()
+          ]
+        : [
+            capitalize(yAxis.name) +
+                ' of games with selected ' +
+                _params.numDrawn.name.toLowerCase(),
+            if (xLabel != null) 'vs ' + xLabel.toLowerCase(),
+            'Out of those matching selected parameters',
+            if (breakdownLabel != null)
+              'Broken down by ' + breakdownLabel.toLowerCase()
+          ];
 
     if (state.value.lineStats != null) {
       var stats = state.value.lineStats;
@@ -77,65 +103,64 @@ class ChartComponent implements OnInit {
         return 'rgba($red, $green, $blue, 0.8)';
       }
 
+      data = LinearChartData(
+        labels: [for (var x in xValueOptions) if (x.selected) x.label],
+        datasets: [
+          for (var breakdown in breakdownValues)
+            for (var option in stats.keys)
+              if (option != DisplayOption.sampleSize || yAxis == YAxis.count)
+                ChartDataSets(
+                    data: [
+                      for (var x in xValueOptions)
+                        if (x.selected) stats[option][breakdown][x.value]
+                    ],
+                    label: breakdown == ''
+                        ? option.label
+                        : '$breakdown, ${option.label}',
+                    fill: false,
+                    borderColor: lineColor(option, breakdown),
+                    pointBackgroundColor: lineColor(option, breakdown),
+                    pointBorderColor: lineColor(option, breakdown))
+        ]);
+
       chart = Chart(
           chartElement,
           ChartConfiguration(
               type: 'line',
-              data: LinearChartData(labels: [
-                for (var x in xValueOptions) if (x.selected) x.label
-              ], datasets: [
-                for (var breakdown in breakdownValues)
-                  for (var option in stats.keys)
-                    if (option != DisplayOption.sampleSize ||
-                        yAxis == YAxis.count)
-                      ChartDataSets(
-                          data: [
-                            for (var x in xValueOptions)
-                              if (x.selected) stats[option][breakdown][x.value]
-                          ],
-                          label: breakdown == ''
-                              ? option.label
-                              : '$breakdown, ${option.label}',
-                          fill: false,
-                          borderColor: lineColor(option, breakdown),
-                          pointBackgroundColor: lineColor(option, breakdown),
-                          pointBorderColor: lineColor(option, breakdown))
-              ]),
+              data: data,
               options: ChartOptions(
-                  title: ChartTitleOptions(
-                      display: true,
-                      text: yAxis == YAxis.average
-                          ? [
-                              'Average ' + _params.numDrawn.name.toLowerCase(),
-                              'vs ' + xLabel.toLowerCase(),
-                              'In games matching selected parameters',
-                              if (breakdownLabel != null)
-                                'Broken down by ' + breakdownLabel.toLowerCase()
-                            ]
-                          : [
-                              capitalize(yAxis.name) +
-                                  ' of games with selected ' +
-                                  _params.numDrawn.name.toLowerCase(),
-                              if (xLabel != null) 'vs ' + xLabel.toLowerCase(),
-                              'Out of those matching selected parameters',
-                              if (breakdownLabel != null)
-                                'Broken down by ' + breakdownLabel.toLowerCase()
-                            ]),
+                  legend: ChartLegendOptions(display: false),
                   tooltips: ChartTooltipOptions(
+                      enabled: false,
+                      custom: (ChartTooltipModel model) {
+                        tooltip = model;
+                        // x as given is left edge of built-in tooltip.
+                        // I need the center instead for positioning custom
+                        // tooltip, and I don't want the edge-of-chart built-in
+                        // behavior.
+                        if (tooltip.xAlign == 'center') {
+                          tooltip.x += tooltip.width / 2;
+                        } else if (tooltip.xAlign == 'right') {
+                          tooltip.x += tooltip.width;
+                        }
+                        tooltip.xAlign = 'center';
+                        _ref.markForCheck();
+                        // need to force change detection to actually run
+                        _zone.run(() {});
+                      },
                       mode: 'index',
                       intersect: false,
                       callbacks: ChartTooltipCallback(label: ([item, data]) {
-                        var label = data.datasets[item.datasetIndex].label;
                         var value = item.yLabel is num
                             ? item.yLabel as num
                             : num.parse(item.yLabel);
                         switch (yAxis) {
                           case YAxis.count:
-                            return '$label: ${value.round()}';
+                            return value.round().toString();
                           case YAxis.percentage:
-                            return '$label: ${(value * 100).toStringAsFixed(2)}%';
+                            return (value * 100).toStringAsFixed(2) + '%';
                           case YAxis.average:
-                            return '$label: ${value.toStringAsFixed(2)}';
+                            return value.toStringAsFixed(2);
                           default:
                             throw AssertionError('Unknown YAxis value $yAxis');
                         }
@@ -143,25 +168,32 @@ class ChartComponent implements OnInit {
                   scales: ChartScales(xAxes: [
                     ChartXAxe(
                         type: 'category',
+                        ticks: TickOptions(fontColor: 'black'),
                         scaleLabel: ScaleTitleOptions(
-                            display: true, labelString: xLabel))
+                            display: true,
+                            labelString: xLabel,
+                            fontColor: 'black'))
                   ], yAxes: [
                     ChartYAxe(
                         type: 'linear',
-                        ticks: TickOptions(beginAtZero: true, min: 0),
+                        ticks: TickOptions(
+                            beginAtZero: true, min: 0, fontColor: 'black'),
                         scaleLabel: ScaleTitleOptions(
                             display: true,
                             labelString: yAxis == YAxis.average
                                 ? 'Average ' + _params.numDrawn.name
                                 : yAxis == YAxis.count
                                     ? 'Number of games'
-                                    : 'Fraction of games'))
+                                    : 'Fraction of games',
+                            fontColor: 'black'))
                   ]),
                   elements:
                       ChartElementsOptions(line: ChartLineOptions(tension: 0)),
                   animation: ChartAnimationOptions(duration: 0),
-                  hover: ChartHoverOptions(animationDuration: 0),
-                  responsiveAnimationDuration: 0)));
+                  hover:
+                      ChartHoverOptions(animationDuration: 0, intersect: false),
+                  responsiveAnimationDuration: 0,
+                  maintainAspectRatio: false)));
     } else {
       var stats = state.value.scatterStats;
       breakdownValues = stats.values.first.keys.toList();

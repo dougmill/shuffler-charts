@@ -1,1 +1,21 @@
-<canvas #chartElement>{{ chart }}</canvas>
+<div class="title">
+  <p *ngFor="let line of title" class="title">{{ line }}</p>
+</div>
+<div class="legend">
+  <div *ngFor="let dataset of data.datasets" class="legend-line">
+    <span [style.background-color]="dataset.pointBackgroundColor" class="legendColor"></span>
+    <span>{{ dataset.label }}</span>
+  </div>
+</div>
+<canvas #chartElement></canvas>
+<div *ngIf="(tooltip?.opacity ?? 0) > 0" class="tooltip" [style.left.px]="chartElement.offsetLeft + tooltip.x"
+[style.top.px]="chartElement.offsetTop + tooltip.y">
+  <span *ngFor="let line of tooltip.title" class="tooltip-title">{{ line }}</span>
+  <ng-container *ngFor="let item of tooltip.body; let i=index">
+    <div class="legend-line">
+      <span [style.background-color]="data.datasets[i].pointBackgroundColor" class="legendColor"></span>
+      <span>{{ data.datasets[i].label }}:</span>
+    </div>
+    <span class="tooltip-value">{{ item.lines[0] }}</span>
+  </ng-container>
+</div>

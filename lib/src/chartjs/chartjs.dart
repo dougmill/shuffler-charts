@@ -447,10 +447,42 @@ abstract class ChartLegendLabelOptions {
 
 @anonymous
 @JS()
+abstract class ChartTooltipModel {
+  external List<dynamic> get body;
+  external set body(List<dynamic> v);
+  external num get opacity;
+  external set opacity(num v);
+  external List<dynamic> get title;
+  external set title(List<dynamic> v);
+  external num get width;
+  external set width(num v);
+  external num get x;
+  external set x(num v);
+  external String get xAlign;
+  external set xAlign(String v);
+  external num get y;
+  external set y(num v);
+  external String get yAlign;
+  external set yAlign(String v);
+  external factory ChartTooltipModel({
+    List<dynamic> body,
+    num opacity,
+    List<dynamic> title,
+    num width,
+    num x,
+    String xAlign,
+    num y,
+    String yAlign
+  });
+}
+
+@anonymous
+@JS()
 abstract class ChartTooltipOptions {
   external bool get enabled;
   external set enabled(bool v);
-  external void custom(dynamic a);
+  external void Function(ChartTooltipModel tooltipModel) get custom;
+  external set custom(void Function(ChartTooltipModel tooltipModel) v);
   external String get mode;
   external set mode(String v);
   external bool get intersect;
@@ -522,6 +554,7 @@ abstract class ChartTooltipOptions {
   external set borderWidth(num v);
   external factory ChartTooltipOptions({
     bool enabled,
+    void Function(ChartTooltipModel tooltipModel) custom,
     String mode,
     bool intersect,
     dynamic /*String|CanvasGradient|CanvasPattern|List<String>*/ backgroundColor,
@@ -884,7 +917,8 @@ abstract class TickOptions<T> {
   external factory TickOptions(
       {bool beginAtZero,
       dynamic min,
-      dynamic max});
+      dynamic max,
+      dynamic /*String|CanvasGradient|CanvasPattern|List<String>*/ fontColor});
 }
 
 @anonymous
