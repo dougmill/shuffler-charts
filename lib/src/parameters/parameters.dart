@@ -528,7 +528,9 @@ void validate(Parameters old, ParametersBuilder updated) {
       updated.options = updated.options.rebuild(
           (p) => p.options = p.options.rebuild((lo) => lo.removeAt(2)));
     }
+  }
 
+  if (old.type.value != type || old.yAxis.value != updated.yAxis.value) {
     updated.xAxis = updated.xAxis.rebuild((b) => b.options = BuiltList([
           ..._getInputSelectOptions(type, updated.yAxis.value),
           Option.of(DisplayOption.actual, DisplayOption.actual.label),
@@ -560,7 +562,7 @@ void validate(Parameters old, ParametersBuilder updated) {
   bool isValueInOptions<T>(Parameter<T> p) =>
       p.options.isEmpty || p.options.any((o) => o.value == p.value);
   String findAxisError<T>(Parameter<T> p) {
-    if (!isValueInOptions(updated.xAxis)) {
+    if (!isValueInOptions(p)) {
       return unsetError;
     } else if (updated.xAxis.value == updated.breakdownBy.value) {
       return 'Cannot break down by X axis factor.';
