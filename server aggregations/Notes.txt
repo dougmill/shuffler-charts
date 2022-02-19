@@ -1,0 +1,185 @@
+General:
+Filter requirements by stage:
+  1: Shuffler data.
+  1: Not affected by March update changing decklist format.
+  1: Not run from source.
+  6: Deck size 40 or 60
+  6: No empty hands.
+  6: No null cards.
+  6: Not affected by Feb update breaking sideboard handling.
+  6: Not affected by bugged regex that skipped the sideboard message.
+  6: No separate blocks of the same card.
+  6: All hands correct size.
+  9: All revealed cards are in decklist.
+  9: All revealed cards have copies <= the number in decklist.
+  10: (For position-based) Sideboarded decklist order recorded.
+  10: (For position-based and copies-based) Sideboarded decklist not affected by bug with merging duplicate cards.
+  10: (Lands in library) Shuffled order not affected by bug with not resetting it per game.
+  11: (For land-based) Lands in deck in target range.
+  14: (For library lands) Cap lands revealed at the amount actually in the library.
+
+Lands:
+deck size (40, 60)
+lands in deck (14-20 limited, 10-28 constructed)
+mulligans (0-6)
+lands in library (7-20 limited, 3-28 constructed)
+best of (1, 3)
+shuffling (normal, bo1, smoothed)
+cards drawn (0-10)
+lands drawn (0-hand+cards)
+total or non-hand
+extrapolated or not
+week
+
+Lands in hand:
+// deck size (2 vals)
+lands in deck (7 + 19 = 26 vals combined)
+mulligans (7 vals, indexable)
+// best of (2 vals)
+shuffling (3 vals, each exclusive to a best of val)
+lands drawn (2-8 vals depending on mulligans, average 5, indexable)
+week (16 vals and growing)
+count value size (4)
+Total data size 120,960 bytes
+Total entries 864
+
+Lands in library:
+Require specific query for deck size and lands in deck
+mulligans (7 vals, indexable)
+lands in library (2-8 vals depending on mulligans, average 5, indexable as lands drawn in hand)
+// best of (2 vals)
+shuffling (3 vals, each exclusive to a best of val)
+cards drawn (10 vals, indexable)
+lands drawn after hand (2-11 vals depending on cards drawn, average 6.5, indexable)
+extrapolated or not (2 vals, indexable)
+week (16 vals and growing)
+count value size (4)
+Total data size per query 873,600 bytes
+Total entries per query 48
+
+Cards:
+deck size (40, 60)
+numCards (0-4, 15-18/22-25)
+position (0-40-numCards or 0-60-numCards, or absent)
+mulligans (0-6)
+best of (1, 3)
+shuffling (normal, bo1, smoothed)
+relevant drawn (0-min(numCards, hand size))
+week
+
+Cards in hand:
+Require specific query for deck size and numCards
+position (about 41 average vals, max 60, indexable)
+mulligans (7 vals, indexable)
+// best of (2 vals)
+shuffling (3 vals, each exclusive to a best of val)
+relevant drawn (2-8 vals depending on mulligans and numCards, average 5 or lower, indexable)
+week (16 vals and growing)
+count value size (4)
+Total data size per query 403,200 bytes max
+Total entries per query 48
+
+Fields at stages:
+Stage 6:
++date
++bestOf
++gameStats
++toolVersion
++originalDeck
++shuffledOrderLengths
++sideboardAdditions
++sideboardRemovals
+
+Stage 7:
++gameIndex
+
+Stage 9:
++deck
++unorderedDeck
++deckSize
++landsInDeck
++handsDrawn
++handLands
++shuffledOrder
++libraryLands
++multiCardPositions
+
+Stage 10:
+-gameStats
+
+Stage 12:
++decklistOk
++shuffledOrderOk
++shuffling
++week
+
+Stage 13 lands in hand:
+{
+  group: {
+    deckSize: "$deckSize",
+    landsInDeck: "$landsInDeck",
+    bestOf: "$bestOf",
+    shuffling: "$shuffling",
+    week: "$week",
+    type: "handLands"
+  },
+  data: "$handLands"
+}
+
+Stage 16 data:
+[mulligans][landsDrawn] => count of games
+
+Stage 13 lands in library:
+{
+  group: {
+    deckSize: "$deckSize",
+    landsInDeck: "$landsInDeck",
+    bestOf: "$bestOf",
+    shuffling: "$shuffling",
+    week: "$week",
+    type: "libraryLands"
+  },
+  data: {
+    mulligans: { $subtract: [{ $size: "$handsDrawn" }, NumberInt(1)] },
+    landsDrawn: { $arrayElemAt: ["$handLands", NumberInt(-1)] },
+    libraryLands: { $slice: ["$libraryLands", NumberInt(10)] }
+  }
+}
+
+Stage 16 data:
+[mulligans][landsInHand][position][landsRevealed] => [count of known games, count of first-unknown games]
+
+Stage 13 cards drawn by position:
+{
+  group: {
+    deckSize: "$deckSize",
+    ?numCards: "$$numCards",
+    bestOf: "$bestOf",
+    shuffling: "$shuffling",
+    week: "$week",
+    type: "cardPositions"
+  },
+  data: [mulligans][position][numDrawn] => count of games
+}
+
+Stage 16 data:
+[mulligans][position][numDrawn] => count of games
+
+Stage 13 cards drawn by count:
+{
+  group: {
+    deckSize: "$deckSize",
+    numCards: "$$numCards",
+    bestOf: "$bestOf",
+    shuffling: "$shuffling",
+    week: "$week",
+    type: "cardCopies"
+  },
+  data: [mulligans][] => counts of cards drawn
+}
+
+Stage 16 data:
+[mulligans][numDrawn] => count of card sets (can be multiple per game)
+
+php-cgi -f shuffler\fetch.php type=cardPositions deckSize=60 numCards=1 independent=false
+php-cgi -f shuffler\aggregate.php password=rqt3afxy targetCount=250
